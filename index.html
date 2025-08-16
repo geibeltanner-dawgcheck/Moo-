@@ -1,64 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MOO Training Simulator</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>MOO Express Trainer</title>
 
-  <!-- Link to favicon + manifest -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icons/icon-192.png">
-  <meta name="theme-color" content="#005BAC">
-
-  <!-- iOS splash & icons -->
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json?v=4">
+  <meta name="theme-color" content="#005BAC"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MOO Trainer">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-1242-2688.png">
 
-  <link rel="stylesheet" href="style.css">
+  <!-- iOS splash screens (portrait) -->
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-640-1136.png"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-750-1334.png"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-828-1792.png"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1125-2436.png"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1242-2688.png"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1488-2266.png"
+    media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1536-2048.png"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1640-2360.png"
+    media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2224.png"
+    media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2388.png"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.png"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+  <link rel="stylesheet" href="styles.css?v=4"/>
 </head>
 <body>
-  <header id="topbar">
-    <img src="icons/icon-192.png" alt="Logo" class="logo">
-    <h1>MOO Training Simulator</h1>
+  <!-- In-app splash so your logo shows on open -->
+  <div id="splash">
+    <div class="splash-inner">
+      <img src="icons/logo.png" alt="MOO" class="splash-logo"/>
+      <div class="splash-title">Express e-App Trainer</div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/logo.png" alt="" class="brand-mark"/>
+      <div>
+        <div class="brand-title">MOO Express Trainer</div>
+        <div class="brand-sub">Term • IUL • Whole Life (Express)</div>
+      </div>
+    </div>
+    <button id="btnInstall" class="btn ghost" hidden>Install</button>
   </header>
 
   <main id="app">
-    <!-- Step 1: Client Info -->
-    <section id="step1" class="step active">
-      <h2>Client Information</h2>
-      <form id="clientForm">
-        <label>Full Name <input type="text" name="name" required></label>
-        <label>Age <input type="number" name="age" required></label>
-        <label>Gender
-          <select name="gender" required>
-            <option value="">Select</option>
-            <option value="M">Male</option>
-            <option value="F">Female</option>
+
+    <!-- 0: Start -->
+    <section class="screen active" id="scr-start">
+      <h1>Start Demo</h1>
+      <p class="muted">Practice the full Express flow. Nothing is sent to a carrier.</p>
+      <div class="card">
+        <button class="btn primary" id="btnStart">Start New Case</button>
+      </div>
+    </section>
+
+    <!-- 1: Case / Product -->
+    <section class="screen" id="scr-case">
+      <h2>Case Information</h2>
+      <div class="grid">
+        <label>State
+          <select id="piState" required>
+            <option value="">Select…</option>
+            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
+            <option>GA</option><option>NC</option><option>PA</option><option>SC</option>
+            <option>TX</option><option>MT</option><option>Other</option>
           </select>
         </label>
-        <button type="button" onclick="nextStep(2)">Next</button>
-      </form>
-    </section>
-
-    <!-- Step 2: Coverage -->
-    <section id="step2" class="step">
-      <h2>Coverage Selection</h2>
-      <form id="coverageForm">
-        <label>Coverage Amount ($)
-          <input type="number" name="coverage" required>
+        <label>Product
+          <select id="productType" required>
+            <option value="">Select…</option>
+            <option value="term">Term Life Express</option>
+            <option value="iul">Indexed Universal Life Express</option>
+            <option value="whole">Whole Life Express</option>
+          </select>
         </label>
-        <button type="button" onclick="nextStep(3)">Get Quote</button>
-      </form>
+        <label id="termWrap" hidden>Term Length
+          <select id="termYears">
+            <option value="10">10 Year</option>
+            <option value="15">15 Year</option>
+            <option value="20" selected>20 Year</option>
+            <option value="30">30 Year</option>
+          </select>
+        </label>
+      </div>
+      <div class="note">Limits: Term/IUL to <b>$300,000</b>, Whole Life to <b>$50,000</b>.</div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
     </section>
 
-    <!-- Step 3: Quote Result -->
-    <section id="step3" class="step">
-      <h2>Your Quote</h2>
-      <div id="quoteOutput"></div>
-      <button type="button" onclick="nextStep(1)">Start Over</button>
+    <!-- 2: Producer -->
+    <section class="screen" id="scr-producer">
+      <h2>Producer Information</h2>
+      <div class="grid">
+        <label>First<input id="prFirst" type="text"></label>
+        <label>MI<input id="prMI" type="text"></label>
+        <label>Last<input id="prLast" type="text"></label>
+        <label>DOB<input id="prDOB" type="text" placeholder="MM/DD/YYYY"></label>
+        <label>Last 4 SSN<input id="prSSN4" maxlength="4" inputmode="numeric"></label>
+        <label>License #<input id="prLic" type="text"></label>
+        <label>Phone<input id="prPhone" type="tel"></label>
+        <label>Email<input id="prEmail" type="email"></label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
     </section>
+
+    <!-- 3: Proposed Insured -->
+    <section class="screen" id="scr-insured">
+      <h2>Proposed Insured</h2>
+      <div class="grid">
+        <label>First<input id="piFirst" type="text" required></label>
+        <label>MI<input id="piMI" type="text"></label>
+        <label>Last<input id="piLast" type="text" required></label>
+        <label>DOB<input id="piDOB" type="text" placeholder="MM/DD/YYYY" required></label>
+        <label>Age<input id="piAge" type="number" min="0" readonly></label>
+        <label>Gender
+          <select id="piGender" required>
+            <option value="">Select…</option><option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </label>
+        <label>Tobacco in last 12 months?
+          <select id="piTob"><option>No</option><option>Yes</option></select>
+        </label>
+      </div>
+      <h3>Contact</h3>
+      <div class="grid">
+        <label>Street<input id="piAddr" type="text"></label>
+        <label>City<input id="piCity" type="text"></label>
+        <label>State<input id="piMailState" type="text" maxlength="2"></label>
+        <label>Zip<input id="piZip" type="text"></label>
+        <label>Phone<input id="piPhone1" type="tel"></label>
+        <label>Email<input id="piEmail" type="email"></label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 4: HIPAA (trainer) -->
+    <section class="screen" id="scr-hipaa">
+      <h2>HIPAA Authorization (Trainer)</h2>
+      <div class="notice warn">Trainer mode: simulates Present/Not Present + PIN. Doesn’t send texts/emails.</div>
+      <div class="grid">
+        <label>Context
+          <select id="hipCtx"><option>Present</option><option>Not Present</option></select>
+        </label>
+        <label>Notify
+          <select id="hipNotify"><option>Email</option><option>Text</option></select>
+        </label>
+        <label>Cell #<input id="hipPhone" type="tel"></label>
+        <label>4-Digit PIN
+          <div class="row">
+            <input id="hipPin" type="text" maxlength="4" inputmode="numeric">
+            <button class="btn" id="genPIN" type="button">Generate</button>
+          </div>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 5: Insured Continued -->
+    <section class="screen" id="scr-insured2">
+      <h2>Proposed Insured – Continued</h2>
+      <div class="grid">
+        <label>DL Number<input id="piDLN" type="text"></label>
+        <label>DL State<input id="piDLS" type="text" maxlength="2"></label>
+        <label>Birth Country<input id="piBirthCountry" type="text" placeholder="USA"></label>
+        <label>Birth State<input id="piBirthState" type="text" maxlength="2"></label>
+        <label>Owner same as Insured?
+          <select id="ownerSame"><option>Yes</option><option>No</option></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 6: Insurance History -->
+    <section class="screen" id="scr-history">
+      <h2>Insurance History</h2>
+      <div class="row">
+        <button class="btn" id="btnAddPolicy" type="button">Add Existing Policy</button>
+        <label class="inline"><input type="checkbox" id="nonePolicies"> None</label>
+      </div>
+      <table class="grid-table" id="tblPolicies">
+        <thead><tr><th>Company</th><th>Policy #</th><th>Face</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <h3>Replacement & Other</h3>
+      <div class="grid">
+        <label>Replacement due to this app?
+          <select id="qRepl"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Declined in last 10 years?
+          <select id="qDecl"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Offered cash/consideration?
+          <select id="qCash"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Premium financing?
+          <select id="qFinance"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Sell/transfer ownership (past/next 5y)?
+          <select id="qStol"><option>No</option><option>Yes</option></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 7: Plan Info -->
+    <section class="screen" id="scr-plan">
+      <h2>Plan Information</h2>
+      <div class="card">
+        <div><b>Maximum coverage allowed (Express):</b> <span id="maxAllowed">—</span></div>
+        <div class="muted">Term/IUL up to <b>$300,000</b> • Whole Life up to <b>$50,000</b></div>
+      </div>
+      <div class="grid">
+        <label>Plan (auto)<input id="planName" type="text" readonly placeholder="—"></label>
+        <label>Amount Applied For ($)<input id="faceAmt" type="number" min="1000" step="1000" inputmode="numeric" required></label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 8: Pre-Approval -->
+    <section class="screen" id="scr-preapp">
+      <h2>Pre-Approval Information</h2>
+      <div class="alert ok"><b>FAVORABLE</b></div>
+      <p class="muted">Not a guarantee of coverage. Trainer always shows a favorable trend.</p>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 9: Underwriting -->
+    <section class="screen" id="scr-uw">
+      <h2>Underwriting – Health Assessment</h2>
+      <p class="muted">Answer all questions. “Yes” reveals notes. (We’ll swap for product-specific later.)</p>
+      <div id="uwList"></div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 10: Beneficiaries -->
+    <section class="screen" id="scr-bene">
+      <h2>Beneficiaries</h2>
+      <h3>Primary</h3>
+      <button class="btn" id="btnAddPrimary" type="button">Add Primary</button>
+      <table class="grid-table" id="tblPrimary">
+        <thead><tr><th>Name</th><th>Relationship</th><th>%</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <h3>Contingent?</h3>
+      <div class="row">
+        <label class="inline"><input type="radio" name="hasCont" value="Yes"> Yes</label>
+        <label class="inline"><input type="radio" name="hasCont" value="No" checked> No</label>
+      </div>
+      <div id="contWrap" hidden>
+        <button class="btn" id="btnAddCont" type="button">Add Contingent</button>
+        <table class="grid-table" id="tblCont">
+          <thead><tr><th>Name</th><th>Relationship</th><th>%</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 11: Premium Summary -->
+    <section class="screen" id="scr-premium">
+      <h2>Premium Summary</h2>
+      <div class="card" id="summaryPI">—</div>
+      <div class="card" id="summaryPlan">—</div>
+      <button class="btn" id="btnCalcPremium" type="button">Calculate Premium</button>
+      <div class="card" id="premResults" aria-live="polite">Rates pending</div>
+
+      <h3>Mode</h3>
+      <div class="grid">
+        <label class="inline"><input type="radio" name="mode" value="Monthly" checked> Monthly EFT</label>
+        <label class="inline"><input type="radio" name="mode" value="Quarterly"> Quarterly</label>
+        <label class="inline"><input type="radio" name="mode" value="Semi"> Semi-Annual</label>
+        <label class="inline"><input type="radio" name="mode" value="Annual"> Annual</label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 12: Automatic Bill Pay -->
+    <section class="screen" id="scr-bill">
+      <h2>Automatic Bill Pay</h2>
+      <div class="grid">
+        <label>Payor Name<input id="payorName" type="text" placeholder="(e.g., Proposed Insured)"></label>
+        <label>Account Type
+          <select id="acctType"><option>Checking</option><option>Savings</option></select>
+        </label>
+        <label>Institution<input id="bankName" type="text"></label>
+        <label>Routing #<input id="routing" type="text" maxlength="9" inputmode="numeric"></label>
+        <label>Account #<input id="acctNo" type="text" inputmode="numeric"></label>
+        <label>Draft Day
+          <select id="draftDay"><option>1st</option><option>5th</option><option>10th</option><option selected>15th</option><option>20th</option><option>25th</option></select>
+        </label>
+        <label>Amount Quoted ($)<input id="amountQuoted" type="text" placeholder="From calculator"></label>
+        <label>Initial Premium
+          <select id="initialPrem"><option>Draft immediately upon approval</option><option>Draft with first monthly cycle</option></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 13: Validate & Lock -->
+    <section class="screen" id="scr-lock">
+      <h2>Validate and Lock Data</h2>
+      <div class="alert ok">Application locked (trainer).</div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 14: Signature Method (client) -->
+    <section class="screen" id="scr-sigmethod">
+      <h2>Signature Method</h2>
+      <div class="grid">
+        <label>Collect all client signatures electronically
+          <select id="sigNotify"><option>Text</option><option>Email</option></select>
+        </label>
+        <label>Cell #<input id="sigPhone" type="tel"></label>
+        <label>4-Digit PIN<input id="sigPin" type="text" maxlength="4" inputmode="numeric"></label>
+        <label>Signed City<input id="sigCity" type="text"></label>
+        <label>Signed State<input id="sigState" type="text" maxlength="2"></label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 15: Producer Statement -->
+    <section class="screen" id="scr-prodstmt">
+      <h2>Producer Statement</h2>
+      <div class="grid">
+        <label>Pending/existing contracts?
+          <select id="ps1"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Names<textarea id="psNames"></textarea></label>
+        <label>Will this replace existing?
+          <select id="ps2"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Gave required notices?
+          <select id="ps3"><option>Yes</option><option>No</option></select>
+        </label>
+        <label>Interview in person?
+          <select id="ps4"><option>Yes</option><option>No</option></select>
+        </label>
+        <label>Explain (if No)<textarea id="psExplain"></textarea></label>
+      </div>
+      <h3>Previous residences (5y)</h3>
+      <button class="btn" id="btnAddAddr" type="button">Add Address</button>
+      <table class="grid-table" id="tblPrevAddr">
+        <thead><tr><th>Street</th><th>City</th><th>State</th><th>Zip</th><th>From</th><th>To</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="grid">
+        <label>Known client for
+          <select id="knownHowLong"><option value="">Select…</option><option>Recently met</option><option>6–12 months</option><option>1–3 years</option><option>3+ years</option></select>
+        </label>
+        <label>Are you the Insured/Owner?
+          <select id="ps5"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Related to Insured/Owner?
+          <select id="ps6"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Other info affecting issuance?
+          <select id="ps7"><option>No</option><option>Yes</option></select>
+        </label>
+        <label>Home financed/refinanced in 2y?
+          <select id="ps8"><option>No</option><option>Yes</option></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 16: Producer eSignature -->
+    <section class="screen" id="scr-prodsign">
+      <h2>Apply eSignature – Producer</h2>
+      <div class="notice warn">Trainer signature pad. Toggle “Sign with finger?” then sign below.</div>
+      <div class="grid">
+        <label>Signed City<input id="prodCity" type="text"></label>
+        <label>Signed State<input id="prodState" type="text" maxlength="2"></label>
+        <label>Sign with finger?
+          <select id="prodFinger"><option>No</option><option>Yes</option></select>
+        </label>
+      </div>
+      <div id="sigWrap" hidden>
+        <canvas id="sigPad"></canvas><br/>
+        <button class="btn" id="clearSig" type="button">Clear</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="applySig" type="button">Apply eSignature</button>
+        <button class="btn" disabled>Print Signed Application</button>
+        <button class="btn" id="submitApp" type="button">Submit to United of Omaha</button>
+      </div>
+      <div id="submitMsg" class="alert ok" hidden></div>
+      <div class="actions">
+        <button class="btn" data-prev>Back</button>
+        <button class="btn primary" data-next>Next</button>
+      </div>
+    </section>
+
+    <!-- 17: Submission -->
+    <section class="screen" id="scr-submit">
+      <h2>Submission Complete</h2>
+      <div class="alert ok">
+        <div><b>Thank you for submitting your Electronic Application!</b></div>
+        <div id="policyNum" class="pad-sm">Policy Number: —</div>
+      </div>
+      <div class="alert ok">Application referred to United of Omaha Underwriting for further review (trainer).</div>
+      <div class="row">
+        <button class="btn" id="resetAll" type="button">Start Over</button>
+      </div>
+    </section>
+
   </main>
 
-  <script src="app.js"></script>
+  <!-- Scripts -->
+  <script src="app.js?v=4"></script>
+  <script>
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js'); }
+  </script>
 </body>
 </html>
