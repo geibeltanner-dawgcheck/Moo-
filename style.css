@@ -1,27 +1,54 @@
+:root {
+  --brand: #005BAC;      /* MOO blue */
+  --ink: #0b0b0b;
+  --bg: #f6f7fb;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  color: #111;
   margin: 0;
-  padding: 2rem;
+  font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+#boot {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  letter-spacing: .08em;
+  z-index: 9999;
+}
+
+.container {
+  max-width: 720px;
+  margin: 56px auto;
+  padding: 0 20px;
   text-align: center;
 }
 
 h1 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  color: var(--brand);
+  margin: 0 0 10px;
 }
 
 button {
-  background: #000;
+  background: var(--brand);
   color: #fff;
-  padding: 1rem 2rem;
-  border: none;
-  font-size: 1.2rem;
+  border: 0;
+  padding: 14px 22px;
+  font-size: 18px;
+  border-radius: 8px;
   cursor: pointer;
-  border-radius: 4px;
 }
 
-button:hover {
-  background: #444;
-}
+button:hover { filter: brightness(1.05); }
+
+#out { margin-top: 16px; font-weight: 600; }
