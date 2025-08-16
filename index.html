@@ -1,453 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <title>MOO Express Trainer</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+  <title>MOO Training Simulator</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#005BAC"/>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-  <!-- Optional: static splash (we also show an in-app splash below) -->
-  <!-- <link rel="apple-touch-startup-image" href="assets/splash/splash-1242x2688.png"> -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#005BAC" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
 
-  <link rel="stylesheet" href="styles.css"/>
+  <!-- (Optional) iOS splash images -- keep your existing files in /splash -->
+  <!-- If you already have the <link rel="apple-touch-startup-image" ...> tags, keep them. -->
+
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <!-- In-app splash so "MOO" shows on open everywhere -->
-  <div id="splash">
-    <div class="splash-inner">
-      <img src="assets/brand/logo.png" alt="MOO" class="splash-logo"/>
-      <div class="splash-title">Express e-App Trainer</div>
-    </div>
-  </div>
-
-  <header class="topbar">
-    <div class="brand">
-      <img src="assets/brand/logo.png" alt="" class="brand-mark"/>
-      <div>
-        <div class="brand-title">MOO Express Trainer</div>
-        <div class="brand-sub">Term • IUL • Whole Life (Express)</div>
-      </div>
-    </div>
-    <button id="btnInstall" class="btn ghost" hidden>Install</button>
+  <header id="topbar">
+    <img src="./icons/icon-192.png" alt="Logo" class="logo">
+    <h1>MOO Training Simulator</h1>
   </header>
 
-  <main id="app">
+  <main id="boot" class="container">
+    <!-- STEP NAV -->
+    <div id="stepper">
+      <button id="backBtn" disabled>&larr; Back</button>
+      <div id="stepLabel">Welcome</div>
+      <button id="nextBtn">Next &rarr;</button>
+    </div>
 
-    <!-- 0: Start -->
-    <section class="screen active" id="scr-start">
-      <h1>Start Demo</h1>
-      <p class="muted">Practice the full Express flow. Nothing is sent to a carrier.</p>
-      <div class="card">
-        <button class="btn primary" id="btnStart">Start New Case</button>
+    <!-- STEP 0: Landing -->
+    <section class="step" id="step-0" data-label="Welcome">
+      <h2>Mutual of Omaha Training Simulator</h2>
+      <p>This is the practice environment for new agents.</p>
+      <button class="primary" data-action="startDemo">Start Demo</button>
+    </section>
+
+    <!-- STEP 1: Start New Case -->
+    <section class="step" id="step-1" data-label="Start New Case" hidden>
+      <div class="card grid-2">
+        <button class="tile primary" data-action="goto" data-target="step-2">
+          Start New Case
+        </button>
+        <button class="tile" disabled title="Training: disabled">View My Cases</button>
       </div>
     </section>
 
-    <!-- 1: Case / Product -->
-    <section class="screen" id="scr-case">
-      <h2>Case Information</h2>
-      <div class="grid">
+    <!-- STEP 2: Case Information (client basics + state + product) -->
+    <section class="step" id="step-2" data-label="Case Information" hidden>
+      <form id="caseForm" class="card">
+        <h3>Proposed Insured</h3>
+        <div class="grid-2">
+          <label>First Name <input name="pi_first" required></label>
+          <label>Last Name <input name="pi_last" required></label>
+          <label>Date of Birth <input name="pi_dob" type="date" required></label>
+          <label>Age <input name="pi_age" type="number" min="0" step="1" required></label>
+          <label>Gender
+            <select name="pi_gender" required>
+              <option value="" selected disabled>Please select…</option>
+              <option>Male</option><option>Female</option>
+            </select>
+          </label>
+        </div>
+
+        <h3>Carrier and Product</h3>
+        <div class="grid-3">
+          <label>State
+            <select name="state" required>
+              <option value="" selected disabled>Please select…</option>
+              <!-- a few common ones for demo -->
+              <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
+              <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
+              <option>SC</option><option>TX</option>
+            </select>
+          </label>
+
+          <label>Product Type
+            <select name="product" required>
+              <option value="" selected disabled>Please select…</option>
+              <option value="TLE">Term Life Express</option>
+              <option value="WLE">Whole Life Express</option>
+              <option value="IULE">Indexed Universal Life Express</option>
+            </select>
+          </label>
+
+          <div class="note">Training uses Express versions automatically.</div>
+        </div>
+      </form>
+    </section>
+
+    <!-- STEP 3: Producer Info (blank for trainee) -->
+    <section class="step" id="step-3" data-label="Producer Information" hidden>
+      <form id="producerForm" class="card grid-2">
+        <label>First <input name="prod_first" required></label>
+        <label>Middle <input name="prod_middle"></label>
+        <label>Last <input name="prod_last" required></label>
+        <label>Date of Birth <input name="prod_dob" type="date"></label>
+        <label>Phone <input name="prod_phone" inputmode="tel" placeholder="(555) 555-5555"></label>
+        <label>Email <input name="prod_email" type="email"></label>
+        <label>Street Address <input name="prod_addr"></label>
+        <label>City <input name="prod_city"></label>
         <label>State
-          <select id="piState" required>
-            <option value="">Select…</option>
+          <select name="prod_state">
+            <option value="" selected disabled>Please select…</option>
             <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
-            <option>GA</option><option>NC</option><option>PA</option><option>SC</option>
-            <option>TX</option><option>MT</option><option>Other</option>
+            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
+            <option>SC</option><option>TX</option>
           </select>
         </label>
-        <label>Product
-          <select id="productType" required>
-            <option value="">Select…</option>
-            <option value="term">Term Life Express</option>
-            <option value="iul">Indexed Universal Life Express</option>
-            <option value="whole">Whole Life Express</option>
-          </select>
-        </label>
-        <label id="termWrap" hidden>Term Length
-          <select id="termYears">
-            <option value="10">10 Year</option>
-            <option value="15">15 Year</option>
-            <option value="20" selected>20 Year</option>
-            <option value="30">30 Year</option>
-          </select>
-        </label>
-      </div>
-      <div class="note">Limits: Term/IUL to <b>$300,000</b>, Whole Life to <b>$50,000</b>.</div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
+        <label>Zip <input name="prod_zip" inputmode="numeric" maxlength="10"></label>
+      </form>
     </section>
 
-    <!-- 2: Producer -->
-    <section class="screen" id="scr-producer">
-      <h2>Producer Information</h2>
-      <div class="grid">
-        <label>First<input id="prFirst" type="text"></label>
-        <label>MI<input id="prMI" type="text"></label>
-        <label>Last<input id="prLast" type="text"></label>
-        <label>DOB<input id="prDOB" type="text" placeholder="MM/DD/YYYY"></label>
-        <label>Last 4 SSN<input id="prSSN4" maxlength="4" inputmode="numeric"></label>
-        <label>License #<input id="prLic" type="text"></label>
-        <label>Phone<input id="prPhone" type="tel"></label>
-        <label>Email<input id="prEmail" type="email"></label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 3: Proposed Insured -->
-    <section class="screen" id="scr-insured">
-      <h2>Proposed Insured</h2>
-      <div class="grid">
-        <label>First<input id="piFirst" type="text" required></label>
-        <label>MI<input id="piMI" type="text"></label>
-        <label>Last<input id="piLast" type="text" required></label>
-        <label>DOB<input id="piDOB" type="text" placeholder="MM/DD/YYYY" required></label>
-        <label>Age<input id="piAge" type="number" min="0" readonly></label>
-        <label>Gender
-          <select id="piGender" required>
-            <option value="">Select…</option><option>Male</option><option>Female</option><option>Other</option>
-          </select>
-        </label>
-        <label>Tobacco in last 12 months?
-          <select id="piTob"><option>No</option><option>Yes</option></select>
-        </label>
-      </div>
-      <h3>Contact</h3>
-      <div class="grid">
-        <label>Street<input id="piAddr" type="text"></label>
-        <label>City<input id="piCity" type="text"></label>
-        <label>State<input id="piMailState" type="text" maxlength="2"></label>
-        <label>Zip<input id="piZip" type="text"></label>
-        <label>Phone<input id="piPhone1" type="tel"></label>
-        <label>Email<input id="piEmail" type="email"></label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 4: HIPAA (trainer) -->
-    <section class="screen" id="scr-hipaa">
-      <h2>HIPAA Authorization (Trainer)</h2>
-      <div class="notice warn">Trainer mode: simulates Present/Not Present + PIN. Doesn’t send texts/emails.</div>
-      <div class="grid">
-        <label>Context
-          <select id="hipCtx"><option>Present</option><option>Not Present</option></select>
-        </label>
-        <label>Notify
-          <select id="hipNotify"><option>Email</option><option>Text</option></select>
-        </label>
-        <label>Cell #<input id="hipPhone" type="tel"></label>
-        <label>4-Digit PIN
-          <div class="row">
-            <input id="hipPin" type="text" maxlength="4" inputmode="numeric">
-            <button class="btn" id="genPIN" type="button">Generate</button>
+    <!-- STEP 4: Proposed Insured Details -->
+    <section class="step" id="step-4" data-label="Proposed Insured" hidden>
+      <form id="piForm" class="card grid-2">
+        <label>Suffix <input name="pi_suffix" placeholder="Jr, Sr, III"></label>
+        <label>SSN (last 4) <input name="pi_ssn4" inputmode="numeric" maxlength="4"></label>
+        <label>Height (ft/in)
+          <div class="grid-2">
+            <input name="pi_ht_ft" type="number" min="3" max="8" placeholder="ft">
+            <input name="pi_ht_in" type="number" min="0" max="11" placeholder="in">
           </div>
         </label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
+        <label>Weight (lb) <input name="pi_wt" type="number" min="50" max="600"></label>
+        <label>Street Address <input name="pi_addr"></label>
+        <label>City <input name="pi_city"></label>
+        <label>State
+          <select name="pi_state">
+            <option value="" selected disabled>Please select…</option>
+            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
+            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
+            <option>SC</option><option>TX</option>
+          </select>
+        </label>
+        <label>Zip <input name="pi_zip" inputmode="numeric" maxlength="10"></label>
+        <fieldset class="inline">
+          <legend>Citizen of the United States?</legend>
+          <label><input type="radio" name="pi_citizen" value="Yes"> Yes</label>
+          <label><input type="radio" name="pi_citizen" value="No"> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Tobacco/Nicotine last 12 months?</legend>
+          <label><input type="radio" name="pi_tobacco" value="Yes"> Yes</label>
+          <label><input type="radio" name="pi_tobacco" value="No"> No</label>
+        </fieldset>
+      </form>
     </section>
 
-    <!-- 5: Insured Continued -->
-    <section class="screen" id="scr-insured2">
-      <h2>Proposed Insured – Continued</h2>
-      <div class="grid">
-        <label>DL Number<input id="piDLN" type="text"></label>
-        <label>DL State<input id="piDLS" type="text" maxlength="2"></label>
-        <label>Birth Country<input id="piBirthCountry" type="text" placeholder="USA"></label>
-        <label>Birth State<input id="piBirthState" type="text" maxlength="2"></label>
-        <label>Owner same as Insured?
-          <select id="ownerSame"><option>Yes</option><option>No</option></select>
-        </label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 6: Insurance History (no MOO-prefill section) -->
-    <section class="screen" id="scr-history">
-      <h2>Insurance History</h2>
-      <div class="row">
-        <button class="btn" id="btnAddPolicy" type="button">Add Existing Policy</button>
-        <label class="inline"><input type="checkbox" id="nonePolicies"> None</label>
-      </div>
-      <table class="grid-table" id="tblPolicies">
-        <thead><tr><th>Company</th><th>Policy #</th><th>Face</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <h3>Replacement & Other</h3>
-      <div class="grid">
-        <label>Replacement due to this app?
-          <select id="qRepl"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Declined in last 10 years?
-          <select id="qDecl"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Offered cash/consideration?
-          <select id="qCash"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Premium financing?
-          <select id="qFinance"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Sell/transfer ownership (past/next 5y)?
-          <select id="qStol"><option>No</option><option>Yes</option></select>
-        </label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 7: Plan Info (approval limits) -->
-    <section class="screen" id="scr-plan">
-      <h2>Plan Information</h2>
+    <!-- STEP 5: HIPAA (training only) -->
+    <section class="step" id="step-5" data-label="HIPAA" hidden>
       <div class="card">
-        <div><b>Maximum coverage allowed (Express):</b> <span id="maxAllowed">--</span></div>
-        <div class="muted">Term/IUL up to $300,000 • Whole Life up to $50,000</div>
-      </div>
-      <div class="grid">
-        <label>Plan (auto)<input id="planName" type="text" readonly placeholder="--"></label>
-        <label>Amount Applied For ($)<input id="faceAmt" type="number" min="1000" step="1000" inputmode="numeric" required></label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 8: Pre-Approval -->
-    <section class="screen" id="scr-preapp">
-      <h2>Pre-Approval Information</h2>
-      <div class="alert ok"><b>FAVORABLE</b></div>
-      <p class="muted">Not a guarantee of coverage. Trainer always shows a favorable trend.</p>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 9: Underwriting – Health Questions (generic; swap later) -->
-    <section class="screen" id="scr-uw">
-      <h2>Underwriting – Health Assessment</h2>
-      <p class="muted">Answer all questions. "Yes" reveals notes. (Will swap for product-specific later.)</p>
-      <div id="uwList"></div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+        <h3>HIPAA Signature Method (Training)</h3>
+        <p>This trainer does not send emails/texts. Choose options to simulate the workflow.</p>
+        <fieldset class="inline">
+          <legend>Signature Method</legend>
+          <label><input type="radio" name="hipaa_method" value="electronic"> Collect all signatures electronically</label>
+          <label><input type="radio" name="hipaa_method" value="wet"> Print for wet signature</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Presence</legend>
+          <label><input type="radio" name="hipaa_presence" value="present"> Present</label>
+          <label><input type="radio" name="hipaa_presence" value="not-present"> Not Present</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Notification Method</legend>
+          <label><input type="radio" name="hipaa_notify" value="email"> Email</label>
+          <label><input type="radio" name="hipaa_notify" value="text"> Text</label>
+        </fieldset>
+        <div class="grid-3">
+          <label>Cell Phone Number <input name="hipaa_phone" inputmode="tel"></label>
+          <label>4 Digit PIN <input name="hipaa_pin" inputmode="numeric" maxlength="4"></label>
+          <label>Signed at City/State
+            <div class="grid-2">
+              <input name="hipaa_city" placeholder="City">
+              <input name="hipaa_state" placeholder="ST" maxlength="2">
+            </div>
+          </label>
+        </div>
       </div>
     </section>
 
-    <!-- 10: Beneficiaries -->
-    <section class="screen" id="scr-bene">
-      <h2>Beneficiaries</h2>
-      <h3>Primary</h3>
-      <button class="btn" id="btnAddPrimary" type="button">Add Primary</button>
-      <table class="grid-table" id="tblPrimary">
-        <thead><tr><th>Name</th><th>Relationship</th><th>%</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <h3>Contingent?</h3>
-      <div class="row">
-        <label class="inline"><input type="radio" name="hasCont" value="Yes"> Yes</label>
-        <label class="inline"><input type="radio" name="hasCont" value="No" checked> No</label>
-      </div>
-      <div id="contWrap" hidden>
-        <button class="btn" id="btnAddCont" type="button">Add Contingent</button>
-        <table class="grid-table" id="tblCont">
-          <thead><tr><th>Name</th><th>Relationship</th><th>%</th><th></th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+    <!-- STEP 6: Proposed Insured (cont.) -->
+    <section class="step" id="step-6" data-label="Proposed Insured Cont’d" hidden>
+      <form id="piContForm" class="card grid-3">
+        <fieldset class="inline">
+          <legend>Driver’s License?</legend>
+          <label><input type="radio" name="pi_dl_have" value="Yes"> Yes</label>
+          <label><input type="radio" name="pi_dl_have" value="No"> No</label>
+        </fieldset>
+        <label>DL Number <input name="pi_dl_num"></label>
+        <label>DL State
+          <select name="pi_dl_state"><option value="" selected disabled>Please select…</option>
+            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
+            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
+            <option>SC</option><option>TX</option></select>
+        </label>
+        <label>Birth Country
+          <select name="pi_birth_country">
+            <option value="" selected disabled>Please select…</option>
+            <option>USA</option><option>Other</option>
+          </select>
+        </label>
+        <label>Birth State
+          <select name="pi_birth_state"><option value="" selected disabled>Please select…</option>
+            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
+            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
+            <option>SC</option><option>TX</option></select>
+        </label>
+        <fieldset class="inline">
+          <legend>Will the Proposed Insured be the Owner?</legend>
+          <label><input type="radio" name="pi_owner" value="Yes"> Yes</label>
+          <label><input type="radio" name="pi_owner" value="No"> No</label>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- STEP 7: Insurance History (no prefilled items) -->
+    <section class="step" id="step-7" data-label="Insurance History" hidden>
+      <form id="historyForm" class="card">
+        <p>List any in-force life insurance or annuity contracts on the proposed insured.</p>
+        <div id="historyList"></div>
+        <button type="button" class="secondary" data-action="addHistory">Click here to add…</button>
+
+        <fieldset class="inline">
+          <legend>Declined for life insurance in past 10 years?</legend>
+          <label><input type="radio" name="hist_declined" value="Yes"> Yes</label>
+          <label><input type="radio" name="hist_declined" value="No"> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Offered cash/consideration for obtaining this policy?</legend>
+          <label><input type="radio" name="hist_cash" value="Yes"> Yes</label>
+          <label><input type="radio" name="hist_cash" value="No"> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Finance arrangement to pay premiums?</legend>
+          <label><input type="radio" name="hist_finance" value="Yes"> Yes</label>
+          <label><input type="radio" name="hist_finance" value="No"> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Sell/transfer ownership in next 5 years (or past 5)?</legend>
+          <label><input type="radio" name="hist_transfer" value="Yes"> Yes</label>
+          <label><input type="radio" name="hist_transfer" value="No"> No</label>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- STEP 8: Plan Information (approval only) -->
+    <section class="step" id="step-8" data-label="Plan Information" hidden>
+      <form id="planForm" class="card grid-2">
+        <div class="note" id="maxCoverageNote">Max coverage allowed: --</div>
+        <label>Amount of Insurance Applied For ($)
+          <input name="face" type="number" min="1000" step="1000" required>
+        </label>
+        <div class="note small">This screen is approval-only in training (no rate chosen here).</div>
+      </form>
+    </section>
+
+    <!-- STEP 9: Pre-Approval (always favorable in trainer) -->
+    <section class="step" id="step-9" data-label="Pre-Approval" hidden>
+      <div class="card center">
+        <p class="badge good">FAVORABLE</p>
+        <p class="muted small">This is not a guarantee of coverage or benefit level. Training mode always shows "Favorable".</p>
+        <button class="primary" data-action="lockData">Lock Data &amp; Continue</button>
       </div>
     </section>
 
-    <!-- 11: Premium Summary -->
-    <section class="screen" id="scr-premium">
-      <h2>Premium Summary</h2>
-      <div class="card" id="summaryPI">--</div>
-      <div class="card" id="summaryPlan">--</div>
-      <button class="btn" id="btnCalcPremium" type="button">Calculate Premium</button>
-      <div class="card" id="premResults" aria-live="polite">Rates pending</div>
+    <!-- STEP 10: Underwriting (product-specific questions) -->
+    <section class="step" id="step-10" data-label="Underwriting" hidden>
+      <form id="uwForm" class="card">
+        <div id="uwQuestions"></div>
+      </form>
+    </section>
 
-      <h3>Mode</h3>
-      <div class="grid">
-        <label class="inline"><input type="radio" name="mode" value="Monthly" checked> Monthly EFT</label>
-        <label class="inline"><input type="radio" name="mode" value="Quarterly"> Quarterly</label>
-        <label class="inline"><input type="radio" name="mode" value="Semi"> Semi-Annual</label>
-        <label class="inline"><input type="radio" name="mode" value="Annual"> Annual</label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+    <!-- STEP 11: Beneficiaries -->
+    <section class="step" id="step-11" data-label="Beneficiaries" hidden>
+      <div class="card">
+        <h3>Primary Beneficiaries</h3>
+        <div id="beneList"></div>
+        <button type="button" class="secondary" data-action="addBene">Click here to add…</button>
+        <fieldset class="inline">
+          <legend>Would you like to designate a contingent beneficiary?</legend>
+          <label><input type="radio" name="add_contingent" value="Yes"> Yes</label>
+          <label><input type="radio" name="add_contingent" value="No" checked> No</label>
+        </fieldset>
       </div>
     </section>
 
-    <!-- 12: Automatic Bill Pay -->
-    <section class="screen" id="scr-bill">
-      <h2>Automatic Bill Pay</h2>
-      <div class="grid">
-        <label>Payor Name<input id="payorName" type="text" placeholder="(e.g., Proposed Insured)"></label>
-        <label>Account Type
-          <select id="acctType"><option>Checking</option><option>Savings</option></select>
-        </label>
-        <label>Institution<input id="bankName" type="text"></label>
-        <label>Routing #<input id="routing" type="text" maxlength="9" inputmode="numeric"></label>
-        <label>Account #<input id="acctNo" type="text" inputmode="numeric"></label>
-        <label>Draft Day
-          <select id="draftDay"><option>1st</option><option>5th</option><option>10th</option><option selected>15th</option><option>20th</option><option>25th</option></select>
-        </label>
-        <label>Amount Quoted ($)<input id="amountQuoted" type="text" placeholder="From calculator"></label>
-        <label>Initial Premium
-          <select id="initialPrem"><option>Draft immediately upon approval</option><option>Draft with first monthly cycle</option></select>
-        </label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+    <!-- STEP 12: Premium Summary & Mode -->
+    <section class="step" id="step-12" data-label="Premium Summary" hidden>
+      <div class="card">
+        <h3>Summary of Proposed Insured’s Information</h3>
+        <div id="summaryPI" class="summary"></div>
+
+        <h3>Plan Information</h3>
+        <div id="summaryPlan" class="summary"></div>
+
+        <button class="primary" data-action="calcPremiums">Calculate Modal Premium</button>
+        <div id="modes" class="modes" hidden>
+          <label><input type="radio" name="mode" value="ANNUAL"> Direct Bill Annual <span class="amt" data-mode="ANNUAL"></span></label>
+          <label><input type="radio" name="mode" value="SEMI"> Direct Bill Semi-Annual <span class="amt" data-mode="SEMI"></span></label>
+          <label><input type="radio" name="mode" value="QUARTER"> Direct Bill Quarterly <span class="amt" data-mode="QUARTER"></span></label>
+          <label class="checked"><input type="radio" name="mode" value="MONTHLY" checked> Monthly Automatic Bill Pay <span class="amt" data-mode="MONTHLY"></span></label>
+        </div>
+
+        <fieldset class="inline">
+          <legend>Pay initial modal premium by Credit Card?</legend>
+          <label><input type="radio" name="init_cc" value="Yes"> Yes</label>
+          <label><input type="radio" name="init_cc" value="No" checked> No</label>
+        </fieldset>
       </div>
     </section>
 
-    <!-- 13: Validate & Lock -->
-    <section class="screen" id="scr-lock">
-      <h2>Validate and Lock Data</h2>
-      <div class="alert ok">Application locked (trainer).</div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+    <!-- STEP 13: Automatic Bill Pay (ACH) -->
+    <section class="step" id="step-13" data-label="Automatic Bill Pay" hidden>
+      <form id="achForm" class="card grid-3">
+        <label>Payor <input name="ach_payor" placeholder="Name of payor"></label>
+        <fieldset class="inline"><legend>Type of Account</legend>
+          <label><input type="radio" name="ach_type" value="Checking" checked> Checking</label>
+          <label><input type="radio" name="ach_type" value="Savings"> Savings</label>
+        </fieldset>
+        <label>Financial Institution <input name="ach_bank"></label>
+        <label>Routing Number <input name="ach_routing" inputmode="numeric" maxlength="9"></label>
+        <label>Account Number <input name="ach_acct" inputmode="numeric"></label>
+        <fieldset class="inline">
+          <legend>Ongoing Automatic Monthly Premium Payment</legend>
+          <label><input type="radio" name="ach_sched" value="by-day" checked> Choose the day each month</label>
+          <label><input type="radio" name="ach_sched" value="by-week"> Choose week/weekday each month</label>
+        </fieldset>
+        <label>Select a particular day
+          <select name="draft_dom">
+            <option>1st</option><option>5th</option><option>10th</option><option selected>15th</option>
+            <option>20th</option><option>25th</option>
+          </select>
+        </label>
+        <div class="note small">If the scheduled date lands on a holiday/weekend, draft occurs next business day.</div>
+      </form>
+    </section>
+
+    <!-- STEP 14: Validate & Lock -->
+    <section class="step" id="step-14" data-label="Validate & Lock" hidden>
+      <div class="card">
+        <p class="badge info">The application has been locked (training).</p>
+        <div class="muted small">Data is protected from changes during the simulated signature process.</div>
       </div>
     </section>
 
-    <!-- 14: Signature Method (client) -->
-    <section class="screen" id="scr-sigmethod">
-      <h2>Signature Method</h2>
-      <div class="grid">
-        <label>Collect all client signatures electronically
-          <select id="sigNotify"><option>Text</option><option>Email</option></select>
-        </label>
-        <label>Cell #<input id="sigPhone" type="tel"></label>
-        <label>4-Digit PIN<input id="sigPin" type="text" maxlength="4" inputmode="numeric"></label>
-        <label>Signed City<input id="sigCity" type="text"></label>
-        <label>Signed State<input id="sigState" type="text" maxlength="2"></label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+    <!-- STEP 15: Signature Method (simulated) -->
+    <section class="step" id="step-15" data-label="Signature Method" hidden>
+      <div class="card">
+        <fieldset class="inline">
+          <legend>Choose a signature method</legend>
+          <label><input type="radio" name="sig_method" value="electronic" checked> Collect all client signatures electronically</label>
+          <label><input type="radio" name="sig_method" value="print"> Print application for client wet signature</label>
+        </fieldset>
+
+        <fieldset class="inline">
+          <legend>Presence</legend>
+          <label><input type="radio" name="sig_presence" value="present"> Present</label>
+          <label><input type="radio" name="sig_presence" value="not-present" checked> Not Present</label>
+        </fieldset>
+
+        <fieldset class="inline">
+          <legend>Notification Method</legend>
+          <label><input type="radio" name="sig_notify" value="email"> Email</label>
+          <label><input type="radio" name="sig_notify" value="text" checked> Text</label>
+        </fieldset>
+
+        <div class="grid-3">
+          <label>Cell Phone Number <input name="sig_phone" inputmode="tel"></label>
+          <label>4 Digit PIN <input name="sig_pin" inputmode="numeric" maxlength="4"></label>
+          <label>Signed at City/State
+            <div class="grid-2">
+              <input name="sig_city" placeholder="City">
+              <input name="sig_state" placeholder="ST" maxlength="2">
+            </div>
+          </label>
+        </div>
       </div>
     </section>
 
-    <!-- 15: Producer Statement -->
-    <section class="screen" id="scr-prodstmt">
-      <h2>Producer Statement</h2>
-      <div class="grid">
-        <label>Pending/existing contracts?
-          <select id="ps1"><option>No</option><option>Yes</option></select>
+    <!-- STEP 16: Producer Statement -->
+    <section class="step" id="step-16" data-label="Producer Statement" hidden>
+      <form id="prodStmtForm" class="card">
+        <fieldset class="inline">
+          <legend>Any pending/existing life insurance/annuity contracts?</legend>
+          <label><input type="radio" name="ps_existing" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_existing" value="No" checked> No</label>
+        </fieldset>
+        <label>Give names if yes <input name="ps_names" placeholder="Names of persons"></label>
+        <fieldset class="inline">
+          <legend>Reason to believe replacement? (any company)</legend>
+          <label><input type="radio" name="ps_replace" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_replace" value="No" checked> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>MIB Pre-Notice, Notice of Information Practices, HIPAA, and Buyer’s Guide provided?</legend>
+          <label><input type="radio" name="ps_disclosures" value="Yes" checked> Yes</label>
+          <label><input type="radio" name="ps_disclosures" value="No"> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Interview conducted in person?</legend>
+          <label><input type="radio" name="ps_inperson" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_inperson" value="No" checked> No</label>
+        </fieldset>
+        <label>Please explain <input name="ps_explain" placeholder="e.g., Virtual"></label>
+        <h4>Previous residence (last 5 years)</h4>
+        <div id="resList"></div>
+        <button type="button" class="secondary" data-action="addResidence">Click here to add…</button>
+
+        <label>How long have you known the Proposed Insured?
+          <select name="ps_known">
+            <option>Recently met</option>
+            <option>1–2 years</option>
+            <option>3–5 years</option>
+            <option>5+ years</option>
+          </select>
         </label>
-        <label>Names<textarea id="psNames"></textarea></label>
-        <label>Will this replace existing?
-          <select id="ps2"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Gave required notices?
-          <select id="ps3"><option>Yes</option><option>No</option></select>
-        </label>
-        <label>Interview in person?
-          <select id="ps4"><option>Yes</option><option>No</option></select>
-        </label>
-        <label>Explain (if No)<textarea id="psExplain"></textarea></label>
-      </div>
-      <h3>Previous residences (5y)</h3>
-      <button class="btn" id="btnAddAddr" type="button">Add Address</button>
-      <table class="grid-table" id="tblPrevAddr">
-        <thead><tr><th>Street</th><th>City</th><th>State</th><th>Zip</th><th>From</th><th>To</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="grid">
-        <label>Known client for
-          <select id="knownHowLong"><option value="">Select…</option><option>Recently met</option><option>6–12 months</option><option>1–3 years</option><option>3+ years</option></select>
-        </label>
-        <label>Are you the Insured/Owner?
-          <select id="ps5"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Related to Insured/Owner?
-          <select id="ps6"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Other info affecting issuance?
-          <select id="ps7"><option>No</option><option>Yes</option></select>
-        </label>
-        <label>Home financed/refinanced in 2y?
-          <select id="ps8"><option>No</option><option>Yes</option></select>
-        </label>
-      </div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
+
+        <fieldset class="inline">
+          <legend>Are you the Proposed Insured or Owner?</legend>
+          <label><input type="radio" name="ps_isowner" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_isowner" value="No" checked> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Related to Proposed Insured or Owner?</legend>
+          <label><input type="radio" name="ps_related" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_related" value="No" checked> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Any additional information that may affect issuance?</legend>
+          <label><input type="radio" name="ps_addl" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_addl" value="No" checked> No</label>
+        </fieldset>
+        <fieldset class="inline">
+          <legend>Financed/refinanced a home in last 2 years?</legend>
+          <label><input type="radio" name="ps_home" value="Yes"> Yes</label>
+          <label><input type="radio" name="ps_home" value="No" checked> No</label>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- STEP 17: Apply eSignature – Producer (simulated end) -->
+    <section class="step" id="step-17" data-label="Apply eSignature" hidden>
+      <div class="card">
+        <label>Signed at City <input name="prod_sig_city" placeholder="City"></label>
+        <label>Signed at State <input name="prod_sig_state" placeholder="ST" maxlength="2"></label>
+        <fieldset class="inline">
+          <legend>Would you like to sign the application with your finger?</legend>
+          <label><input type="radio" name="prod_finger" value="Yes"> Yes</label>
+          <label><input type="radio" name="prod_finger" value="No" checked> No</label>
+        </fieldset>
+        <div class="done">
+          <p class="badge good">Thank you for submitting your Electronic Application!</p>
+          <p class="muted small">In training, this simulates a successful submission.</p>
+        </div>
       </div>
     </section>
 
-    <!-- 16: Producer eSignature -->
-    <section class="screen" id="scr-prodsign">
-      <h2>Apply eSignature – Producer</h2>
-      <div class="notice warn">Trainer signature pad. Toggle "Sign with finger?" then sign below.</div>
-      <div class="grid">
-        <label>Signed City<input id="prodCity" type="text"></label>
-        <label>Signed State<input id="prodState" type="text" maxlength="2"></label>
-        <label>Sign with finger?
-          <select id="prodFinger"><option>No</option><option>Yes</option></select>
-        </label>
-      </div>
-      <div id="sigWrap" hidden>
-        <canvas id="sigPad"></canvas><br/>
-        <button class="btn" id="clearSig" type="button">Clear</button>
-      </div>
-      <div class="row">
-        <button class="btn" id="applySig" type="button">Apply eSignature</button>
-        <button class="btn" disabled>Print Signed Application</button>
-        <button class="btn" id="submitApp" type="button">Submit to United of Omaha</button>
-      </div>
-      <div id="submitMsg" class="alert ok" hidden></div>
-      <div class="actions">
-        <button class="btn" data-prev>Back</button>
-        <button class="btn primary" data-next>Next</button>
-      </div>
-    </section>
-
-    <!-- 17: Submission -->
-    <section class="screen" id="scr-submit">
-      <h2>Submission Complete</h2>
-      <div class="alert ok">
-        <div><b>Thank you for submitting your Electronic Application!</b></div>
-        <div id="policyNum" class="pad-sm">Policy Number: --</div>
-      </div>
-      <div class="alert ok">Application referred to United of Omaha Underwriting for further review (trainer).</div>
-      <div class="row">
-        <button class="btn" id="resetAll" type="button">Start Over</button>
-      </div>
-    </section>
-
+    <!-- Reusable modal (beneficiary/history rows) -->
+    <dialog id="rowDialog">
+      <form method="dialog" id="rowForm" class="grid-3">
+        <label>Name <input name="name" required></label>
+        <label>Relationship <input name="rel" required></label>
+        <label>% Share <input name="share" type="number" min="0" max="100" required></label>
+        <menu>
+          <button value="cancel">Cancel</button>
+          <button class="primary" value="ok">Save</button>
+        </menu>
+      </form>
+    </dialog>
   </main>
 
-  <script src="app.js"></script>
+  <script src="./app.js"></script>
   <script>
-    // Service worker
+    // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js');
+      });
     }
   </script>
 </body>
