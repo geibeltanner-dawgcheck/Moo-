@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>MOO Training Simulator</title>
 
-  <!-- Manifest + theme (RELATIVE paths for GitHub Pages subfolder) -->
-  <link rel="manifest" href="./manifest.webmanifest" />
+  <!-- Manifest (RELATIVE path + cache-buster) -->
+  <link rel="manifest" href="./manifest.webmanifest?v=4" />
   <meta name="theme-color" content="#005BAC" />
 
   <!-- iOS install bits -->
@@ -15,54 +15,59 @@
   <meta name="apple-mobile-web-app-title" content="MOO" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-  <!-- iOS splash screens -->
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.png"
+  <!-- iOS splash screens (ALL the sizes) -->
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.png?v=4"
         media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2388.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2388.png?v=4"
         media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2224.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2224.png?v=4"
         media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-1536-2048.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1536-2048.png?v=4"
         media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-1242-2688.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1242-2688.png?v=4"
         media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-1125-2436.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1125-2436.png?v=4"
         media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-828-1792.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-828-1792.png?v=4"
         media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-750-1334.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-750-1334.png?v=4"
         media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <link rel="apple-touch-startup-image" href="splash/apple-splash-640-1136.png"
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-640-1136.png?v=4"
         media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <!-- iPad mini 6 (8.3") -->
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1488-2266.png?v=4"
+        media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <!-- iPad 10.9 / Air -->
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1640-2360.png?v=4"
+        media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <!-- simple in-app boot screen (hidden when loaded) -->
+  <!-- in-app boot overlay (hidden on load) -->
   <div id="boot">MOO</div>
 
   <main class="container">
     <h1>Mutual of Omaha Training Simulator</h1>
     <p>This is the practice environment for new agents.</p>
-
     <button id="start">Start Demo</button>
     <div id="out"></div>
   </main>
 
   <script>
-    // demo logic
+    // demo action
     document.getElementById('start').addEventListener('click', () => {
       document.getElementById('out').textContent = 'Form simulation coming soon…';
       alert('Form simulation coming soon!');
     });
 
-    // hide boot overlay when page is ready
+    // hide boot once loaded
     window.addEventListener('load', () => {
       const boot = document.getElementById('boot');
       if (boot) boot.style.display = 'none';
     });
 
-    // register service worker (RELATIVE path)
+    // register service worker (relative path)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(()=>{});
     }
