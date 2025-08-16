@@ -1,10 +1,10 @@
-const CACHE = 'moo-trainer-v4';
+const CACHE = 'moo-trainer-v6';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=4',
-  './app.js?v=4',
-  './manifest.json?v=4',
+  './styles.css?v=6',
+  './app.js?v=6',
+  './manifest.json?v=6',
   './icons/logo.png',
   './icons/icon-192.png',
   './icons/icon-512.png'
