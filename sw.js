@@ -1,4 +1,4 @@
-// bump this to bust old caches after changes
+// keep at v4 per request
 const CACHE = 'moo-cache-v4';
 
 const ASSETS = [
