@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MOO Training App</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+</head>
+<body>
+  <h1>Mutual of Omaha Training Simulator</h1>
+  <p>This is the practice environment for new agents.</p>
+  <button onclick="alert('Form simulation coming soon!')">Start Demo App</button>
+</body>
+</html>
