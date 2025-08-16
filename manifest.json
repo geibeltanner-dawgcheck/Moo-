@@ -1,13 +1,20 @@
 {
   "name": "MOO Training Simulator",
-  "short_name": "MOO",
-  "start_url": ".",
-  "scope": ".",
+  "short_name": "MOO Sim",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#005BAC",
+  "background_color": "#ffffff",
   "theme_color": "#005BAC",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
