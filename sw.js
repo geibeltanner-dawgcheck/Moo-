@@ -1,19 +1,18 @@
-self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open("moo-trainer").then((cache) => {
-      return cache.addAll([
-        "./",
-        "./index.html",
-        "./manifest.webmanifest"
-      ]);
-    })
-  );
+const CACHE = "moo-cache-v1";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
+];
+
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
 });
 
-self.addEventListener("fetch", (e) => {
+self.addEventListener("fetch", e => {
   e.respondWith(
-    caches.match(e.request).then((response) => {
-      return response || fetch(e.request);
-    })
+    caches.match(e.request).then(res => res || fetch(e.request))
   );
 });
