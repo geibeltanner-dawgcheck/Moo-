@@ -1,519 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MOO Training Simulator</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#005BAC" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <!-- Link to favicon + manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <meta name="theme-color" content="#005BAC">
 
-  <!-- iOS PWA splash screens (portrait) -->
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-640-1136.png"
-  media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <!-- iOS splash & icons -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-startup-image" href="splash/apple-splash-1242-2688.png">
 
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-750-1334.png"
-  media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-828-1792.png"
-  media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1125-2436.png"
-  media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1242-2688.png"
-  media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1488-2266.png"
-  media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1536-2048.png"
-  media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1640-2360.png"
-  media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1668-2224.png"
-  media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-1668-2388.png"
-  media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-
-<link rel="apple-touch-startup-image" href="./splash/apple-splash-2048-2732.png"
-  media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"> -->
-  <!-- If you already have the <link rel="apple-touch-startup-image" ...> tags, keep them. -->
-
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header id="topbar">
-    <img src="./icons/icon-192.png" alt="Logo" class="logo">
+    <img src="icons/icon-192.png" alt="Logo" class="logo">
     <h1>MOO Training Simulator</h1>
   </header>
 
-  <main id="boot" class="container">
-    <!-- STEP NAV -->
-    <div id="stepper">
-      <button id="backBtn" disabled>&larr; Back</button>
-      <div id="stepLabel">Welcome</div>
-      <button id="nextBtn">Next &rarr;</button>
-    </div>
-
-    <!-- STEP 0: Landing -->
-    <section class="step" id="step-0" data-label="Welcome">
-      <h2>Mutual of Omaha Training Simulator</h2>
-      <p>This is the practice environment for new agents.</p>
-      <button class="primary" data-action="startDemo">Start Demo</button>
-    </section>
-
-    <!-- STEP 1: Start New Case -->
-    <section class="step" id="step-1" data-label="Start New Case" hidden>
-      <div class="card grid-2">
-        <button class="tile primary" data-action="goto" data-target="step-2">
-          Start New Case
-        </button>
-        <button class="tile" disabled title="Training: disabled">View My Cases</button>
-      </div>
-    </section>
-
-    <!-- STEP 2: Case Information (client basics + state + product) -->
-    <section class="step" id="step-2" data-label="Case Information" hidden>
-      <form id="caseForm" class="card">
-        <h3>Proposed Insured</h3>
-        <div class="grid-2">
-          <label>First Name <input name="pi_first" required></label>
-          <label>Last Name <input name="pi_last" required></label>
-          <label>Date of Birth <input name="pi_dob" type="date" required></label>
-          <label>Age <input name="pi_age" type="number" min="0" step="1" required></label>
-          <label>Gender
-            <select name="pi_gender" required>
-              <option value="" selected disabled>Please select…</option>
-              <option>Male</option><option>Female</option>
-            </select>
-          </label>
-        </div>
-
-        <h3>Carrier and Product</h3>
-        <div class="grid-3">
-          <label>State
-            <select name="state" required>
-              <option value="" selected disabled>Please select…</option>
-              <!-- a few common ones for demo -->
-              <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
-              <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
-              <option>SC</option><option>TX</option>
-            </select>
-          </label>
-
-          <label>Product Type
-            <select name="product" required>
-              <option value="" selected disabled>Please select…</option>
-              <option value="TLE">Term Life Express</option>
-              <option value="WLE">Whole Life Express</option>
-              <option value="IULE">Indexed Universal Life Express</option>
-            </select>
-          </label>
-
-          <div class="note">Training uses Express versions automatically.</div>
-        </div>
-      </form>
-    </section>
-
-    <!-- STEP 3: Producer Info (blank for trainee) -->
-    <section class="step" id="step-3" data-label="Producer Information" hidden>
-      <form id="producerForm" class="card grid-2">
-        <label>First <input name="prod_first" required></label>
-        <label>Middle <input name="prod_middle"></label>
-        <label>Last <input name="prod_last" required></label>
-        <label>Date of Birth <input name="prod_dob" type="date"></label>
-        <label>Phone <input name="prod_phone" inputmode="tel" placeholder="(555) 555-5555"></label>
-        <label>Email <input name="prod_email" type="email"></label>
-        <label>Street Address <input name="prod_addr"></label>
-        <label>City <input name="prod_city"></label>
-        <label>State
-          <select name="prod_state">
-            <option value="" selected disabled>Please select…</option>
-            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
-            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
-            <option>SC</option><option>TX</option>
+  <main id="app">
+    <!-- Step 1: Client Info -->
+    <section id="step1" class="step active">
+      <h2>Client Information</h2>
+      <form id="clientForm">
+        <label>Full Name <input type="text" name="name" required></label>
+        <label>Age <input type="number" name="age" required></label>
+        <label>Gender
+          <select name="gender" required>
+            <option value="">Select</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
           </select>
         </label>
-        <label>Zip <input name="prod_zip" inputmode="numeric" maxlength="10"></label>
+        <button type="button" onclick="nextStep(2)">Next</button>
       </form>
     </section>
 
-    <!-- STEP 4: Proposed Insured Details -->
-    <section class="step" id="step-4" data-label="Proposed Insured" hidden>
-      <form id="piForm" class="card grid-2">
-        <label>Suffix <input name="pi_suffix" placeholder="Jr, Sr, III"></label>
-        <label>SSN (last 4) <input name="pi_ssn4" inputmode="numeric" maxlength="4"></label>
-        <label>Height (ft/in)
-          <div class="grid-2">
-            <input name="pi_ht_ft" type="number" min="3" max="8" placeholder="ft">
-            <input name="pi_ht_in" type="number" min="0" max="11" placeholder="in">
-          </div>
+    <!-- Step 2: Coverage -->
+    <section id="step2" class="step">
+      <h2>Coverage Selection</h2>
+      <form id="coverageForm">
+        <label>Coverage Amount ($)
+          <input type="number" name="coverage" required>
         </label>
-        <label>Weight (lb) <input name="pi_wt" type="number" min="50" max="600"></label>
-        <label>Street Address <input name="pi_addr"></label>
-        <label>City <input name="pi_city"></label>
-        <label>State
-          <select name="pi_state">
-            <option value="" selected disabled>Please select…</option>
-            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
-            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
-            <option>SC</option><option>TX</option>
-          </select>
-        </label>
-        <label>Zip <input name="pi_zip" inputmode="numeric" maxlength="10"></label>
-        <fieldset class="inline">
-          <legend>Citizen of the United States?</legend>
-          <label><input type="radio" name="pi_citizen" value="Yes"> Yes</label>
-          <label><input type="radio" name="pi_citizen" value="No"> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Tobacco/Nicotine last 12 months?</legend>
-          <label><input type="radio" name="pi_tobacco" value="Yes"> Yes</label>
-          <label><input type="radio" name="pi_tobacco" value="No"> No</label>
-        </fieldset>
+        <button type="button" onclick="nextStep(3)">Get Quote</button>
       </form>
     </section>
 
-    <!-- STEP 5: HIPAA (training only) -->
-    <section class="step" id="step-5" data-label="HIPAA" hidden>
-      <div class="card">
-        <h3>HIPAA Signature Method (Training)</h3>
-        <p>This trainer does not send emails/texts. Choose options to simulate the workflow.</p>
-        <fieldset class="inline">
-          <legend>Signature Method</legend>
-          <label><input type="radio" name="hipaa_method" value="electronic"> Collect all signatures electronically</label>
-          <label><input type="radio" name="hipaa_method" value="wet"> Print for wet signature</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Presence</legend>
-          <label><input type="radio" name="hipaa_presence" value="present"> Present</label>
-          <label><input type="radio" name="hipaa_presence" value="not-present"> Not Present</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Notification Method</legend>
-          <label><input type="radio" name="hipaa_notify" value="email"> Email</label>
-          <label><input type="radio" name="hipaa_notify" value="text"> Text</label>
-        </fieldset>
-        <div class="grid-3">
-          <label>Cell Phone Number <input name="hipaa_phone" inputmode="tel"></label>
-          <label>4 Digit PIN <input name="hipaa_pin" inputmode="numeric" maxlength="4"></label>
-          <label>Signed at City/State
-            <div class="grid-2">
-              <input name="hipaa_city" placeholder="City">
-              <input name="hipaa_state" placeholder="ST" maxlength="2">
-            </div>
-          </label>
-        </div>
-      </div>
+    <!-- Step 3: Quote Result -->
+    <section id="step3" class="step">
+      <h2>Your Quote</h2>
+      <div id="quoteOutput"></div>
+      <button type="button" onclick="nextStep(1)">Start Over</button>
     </section>
-
-    <!-- STEP 6: Proposed Insured (cont.) -->
-    <section class="step" id="step-6" data-label="Proposed Insured Cont’d" hidden>
-      <form id="piContForm" class="card grid-3">
-        <fieldset class="inline">
-          <legend>Driver’s License?</legend>
-          <label><input type="radio" name="pi_dl_have" value="Yes"> Yes</label>
-          <label><input type="radio" name="pi_dl_have" value="No"> No</label>
-        </fieldset>
-        <label>DL Number <input name="pi_dl_num"></label>
-        <label>DL State
-          <select name="pi_dl_state"><option value="" selected disabled>Please select…</option>
-            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
-            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
-            <option>SC</option><option>TX</option></select>
-        </label>
-        <label>Birth Country
-          <select name="pi_birth_country">
-            <option value="" selected disabled>Please select…</option>
-            <option>USA</option><option>Other</option>
-          </select>
-        </label>
-        <label>Birth State
-          <select name="pi_birth_state"><option value="" selected disabled>Please select…</option>
-            <option>AL</option><option>AZ</option><option>CA</option><option>FL</option>
-            <option>GA</option><option>NC</option><option>NY</option><option>PA</option>
-            <option>SC</option><option>TX</option></select>
-        </label>
-        <fieldset class="inline">
-          <legend>Will the Proposed Insured be the Owner?</legend>
-          <label><input type="radio" name="pi_owner" value="Yes"> Yes</label>
-          <label><input type="radio" name="pi_owner" value="No"> No</label>
-        </fieldset>
-      </form>
-    </section>
-
-    <!-- STEP 7: Insurance History (no prefilled items) -->
-    <section class="step" id="step-7" data-label="Insurance History" hidden>
-      <form id="historyForm" class="card">
-        <p>List any in-force life insurance or annuity contracts on the proposed insured.</p>
-        <div id="historyList"></div>
-        <button type="button" class="secondary" data-action="addHistory">Click here to add…</button>
-
-        <fieldset class="inline">
-          <legend>Declined for life insurance in past 10 years?</legend>
-          <label><input type="radio" name="hist_declined" value="Yes"> Yes</label>
-          <label><input type="radio" name="hist_declined" value="No"> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Offered cash/consideration for obtaining this policy?</legend>
-          <label><input type="radio" name="hist_cash" value="Yes"> Yes</label>
-          <label><input type="radio" name="hist_cash" value="No"> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Finance arrangement to pay premiums?</legend>
-          <label><input type="radio" name="hist_finance" value="Yes"> Yes</label>
-          <label><input type="radio" name="hist_finance" value="No"> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Sell/transfer ownership in next 5 years (or past 5)?</legend>
-          <label><input type="radio" name="hist_transfer" value="Yes"> Yes</label>
-          <label><input type="radio" name="hist_transfer" value="No"> No</label>
-        </fieldset>
-      </form>
-    </section>
-
-    <!-- STEP 8: Plan Information (approval only) -->
-    <section class="step" id="step-8" data-label="Plan Information" hidden>
-      <form id="planForm" class="card grid-2">
-        <div class="note" id="maxCoverageNote">Max coverage allowed: --</div>
-        <label>Amount of Insurance Applied For ($)
-          <input name="face" type="number" min="1000" step="1000" required>
-        </label>
-        <div class="note small">This screen is approval-only in training (no rate chosen here).</div>
-      </form>
-    </section>
-
-    <!-- STEP 9: Pre-Approval (always favorable in trainer) -->
-    <section class="step" id="step-9" data-label="Pre-Approval" hidden>
-      <div class="card center">
-        <p class="badge good">FAVORABLE</p>
-        <p class="muted small">This is not a guarantee of coverage or benefit level. Training mode always shows "Favorable".</p>
-        <button class="primary" data-action="lockData">Lock Data &amp; Continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 10: Underwriting (product-specific questions) -->
-    <section class="step" id="step-10" data-label="Underwriting" hidden>
-      <form id="uwForm" class="card">
-        <div id="uwQuestions"></div>
-      </form>
-    </section>
-
-    <!-- STEP 11: Beneficiaries -->
-    <section class="step" id="step-11" data-label="Beneficiaries" hidden>
-      <div class="card">
-        <h3>Primary Beneficiaries</h3>
-        <div id="beneList"></div>
-        <button type="button" class="secondary" data-action="addBene">Click here to add…</button>
-        <fieldset class="inline">
-          <legend>Would you like to designate a contingent beneficiary?</legend>
-          <label><input type="radio" name="add_contingent" value="Yes"> Yes</label>
-          <label><input type="radio" name="add_contingent" value="No" checked> No</label>
-        </fieldset>
-      </div>
-    </section>
-
-    <!-- STEP 12: Premium Summary & Mode -->
-    <section class="step" id="step-12" data-label="Premium Summary" hidden>
-      <div class="card">
-        <h3>Summary of Proposed Insured’s Information</h3>
-        <div id="summaryPI" class="summary"></div>
-
-        <h3>Plan Information</h3>
-        <div id="summaryPlan" class="summary"></div>
-
-        <button class="primary" data-action="calcPremiums">Calculate Modal Premium</button>
-        <div id="modes" class="modes" hidden>
-          <label><input type="radio" name="mode" value="ANNUAL"> Direct Bill Annual <span class="amt" data-mode="ANNUAL"></span></label>
-          <label><input type="radio" name="mode" value="SEMI"> Direct Bill Semi-Annual <span class="amt" data-mode="SEMI"></span></label>
-          <label><input type="radio" name="mode" value="QUARTER"> Direct Bill Quarterly <span class="amt" data-mode="QUARTER"></span></label>
-          <label class="checked"><input type="radio" name="mode" value="MONTHLY" checked> Monthly Automatic Bill Pay <span class="amt" data-mode="MONTHLY"></span></label>
-        </div>
-
-        <fieldset class="inline">
-          <legend>Pay initial modal premium by Credit Card?</legend>
-          <label><input type="radio" name="init_cc" value="Yes"> Yes</label>
-          <label><input type="radio" name="init_cc" value="No" checked> No</label>
-        </fieldset>
-      </div>
-    </section>
-
-    <!-- STEP 13: Automatic Bill Pay (ACH) -->
-    <section class="step" id="step-13" data-label="Automatic Bill Pay" hidden>
-      <form id="achForm" class="card grid-3">
-        <label>Payor <input name="ach_payor" placeholder="Name of payor"></label>
-        <fieldset class="inline"><legend>Type of Account</legend>
-          <label><input type="radio" name="ach_type" value="Checking" checked> Checking</label>
-          <label><input type="radio" name="ach_type" value="Savings"> Savings</label>
-        </fieldset>
-        <label>Financial Institution <input name="ach_bank"></label>
-        <label>Routing Number <input name="ach_routing" inputmode="numeric" maxlength="9"></label>
-        <label>Account Number <input name="ach_acct" inputmode="numeric"></label>
-        <fieldset class="inline">
-          <legend>Ongoing Automatic Monthly Premium Payment</legend>
-          <label><input type="radio" name="ach_sched" value="by-day" checked> Choose the day each month</label>
-          <label><input type="radio" name="ach_sched" value="by-week"> Choose week/weekday each month</label>
-        </fieldset>
-        <label>Select a particular day
-          <select name="draft_dom">
-            <option>1st</option><option>5th</option><option>10th</option><option selected>15th</option>
-            <option>20th</option><option>25th</option>
-          </select>
-        </label>
-        <div class="note small">If the scheduled date lands on a holiday/weekend, draft occurs next business day.</div>
-      </form>
-    </section>
-
-    <!-- STEP 14: Validate & Lock -->
-    <section class="step" id="step-14" data-label="Validate & Lock" hidden>
-      <div class="card">
-        <p class="badge info">The application has been locked (training).</p>
-        <div class="muted small">Data is protected from changes during the simulated signature process.</div>
-      </div>
-    </section>
-
-    <!-- STEP 15: Signature Method (simulated) -->
-    <section class="step" id="step-15" data-label="Signature Method" hidden>
-      <div class="card">
-        <fieldset class="inline">
-          <legend>Choose a signature method</legend>
-          <label><input type="radio" name="sig_method" value="electronic" checked> Collect all client signatures electronically</label>
-          <label><input type="radio" name="sig_method" value="print"> Print application for client wet signature</label>
-        </fieldset>
-
-        <fieldset class="inline">
-          <legend>Presence</legend>
-          <label><input type="radio" name="sig_presence" value="present"> Present</label>
-          <label><input type="radio" name="sig_presence" value="not-present" checked> Not Present</label>
-        </fieldset>
-
-        <fieldset class="inline">
-          <legend>Notification Method</legend>
-          <label><input type="radio" name="sig_notify" value="email"> Email</label>
-          <label><input type="radio" name="sig_notify" value="text" checked> Text</label>
-        </fieldset>
-
-        <div class="grid-3">
-          <label>Cell Phone Number <input name="sig_phone" inputmode="tel"></label>
-          <label>4 Digit PIN <input name="sig_pin" inputmode="numeric" maxlength="4"></label>
-          <label>Signed at City/State
-            <div class="grid-2">
-              <input name="sig_city" placeholder="City">
-              <input name="sig_state" placeholder="ST" maxlength="2">
-            </div>
-          </label>
-        </div>
-      </div>
-    </section>
-
-    <!-- STEP 16: Producer Statement -->
-    <section class="step" id="step-16" data-label="Producer Statement" hidden>
-      <form id="prodStmtForm" class="card">
-        <fieldset class="inline">
-          <legend>Any pending/existing life insurance/annuity contracts?</legend>
-          <label><input type="radio" name="ps_existing" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_existing" value="No" checked> No</label>
-        </fieldset>
-        <label>Give names if yes <input name="ps_names" placeholder="Names of persons"></label>
-        <fieldset class="inline">
-          <legend>Reason to believe replacement? (any company)</legend>
-          <label><input type="radio" name="ps_replace" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_replace" value="No" checked> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>MIB Pre-Notice, Notice of Information Practices, HIPAA, and Buyer’s Guide provided?</legend>
-          <label><input type="radio" name="ps_disclosures" value="Yes" checked> Yes</label>
-          <label><input type="radio" name="ps_disclosures" value="No"> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Interview conducted in person?</legend>
-          <label><input type="radio" name="ps_inperson" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_inperson" value="No" checked> No</label>
-        </fieldset>
-        <label>Please explain <input name="ps_explain" placeholder="e.g., Virtual"></label>
-        <h4>Previous residence (last 5 years)</h4>
-        <div id="resList"></div>
-        <button type="button" class="secondary" data-action="addResidence">Click here to add…</button>
-
-        <label>How long have you known the Proposed Insured?
-          <select name="ps_known">
-            <option>Recently met</option>
-            <option>1–2 years</option>
-            <option>3–5 years</option>
-            <option>5+ years</option>
-          </select>
-        </label>
-
-        <fieldset class="inline">
-          <legend>Are you the Proposed Insured or Owner?</legend>
-          <label><input type="radio" name="ps_isowner" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_isowner" value="No" checked> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Related to Proposed Insured or Owner?</legend>
-          <label><input type="radio" name="ps_related" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_related" value="No" checked> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Any additional information that may affect issuance?</legend>
-          <label><input type="radio" name="ps_addl" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_addl" value="No" checked> No</label>
-        </fieldset>
-        <fieldset class="inline">
-          <legend>Financed/refinanced a home in last 2 years?</legend>
-          <label><input type="radio" name="ps_home" value="Yes"> Yes</label>
-          <label><input type="radio" name="ps_home" value="No" checked> No</label>
-        </fieldset>
-      </form>
-    </section>
-
-    <!-- STEP 17: Apply eSignature – Producer (simulated end) -->
-    <section class="step" id="step-17" data-label="Apply eSignature" hidden>
-      <div class="card">
-        <label>Signed at City <input name="prod_sig_city" placeholder="City"></label>
-        <label>Signed at State <input name="prod_sig_state" placeholder="ST" maxlength="2"></label>
-        <fieldset class="inline">
-          <legend>Would you like to sign the application with your finger?</legend>
-          <label><input type="radio" name="prod_finger" value="Yes"> Yes</label>
-          <label><input type="radio" name="prod_finger" value="No" checked> No</label>
-        </fieldset>
-        <div class="done">
-          <p class="badge good">Thank you for submitting your Electronic Application!</p>
-          <p class="muted small">In training, this simulates a successful submission.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Reusable modal (beneficiary/history rows) -->
-    <dialog id="rowDialog">
-      <form method="dialog" id="rowForm" class="grid-3">
-        <label>Name <input name="name" required></label>
-        <label>Relationship <input name="rel" required></label>
-        <label>% Share <input name="share" type="number" min="0" max="100" required></label>
-        <menu>
-          <button value="cancel">Cancel</button>
-          <button class="primary" value="ok">Save</button>
-        </menu>
-      </form>
-    </dialog>
   </main>
 
-  <script src="./app.js"></script>
-  <script>
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js');
-      });
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
