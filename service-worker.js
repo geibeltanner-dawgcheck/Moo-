@@ -1,7 +1,6 @@
 // Simple cache for trainer
 const CACHE = 'moo-cache-v5';
 const ASSETS = [
-  './',
   './index.html',
   './style.css',
   './app.js',
