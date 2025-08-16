@@ -1,0 +1,676 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Life e‑App Trainer (MOO‑style)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; background:#0f1115; color:#e6e6e6;}
+    header { padding: 16px 24px; background: #141722; border-bottom:1px solid #22263a; position: sticky; top:0; z-index: 10;}
+    header h1 { font-size: 18px; margin:0; letter-spacing: .3px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .card { background:#141722; border:1px solid #22263a; border-radius:12px; padding: 20px; margin-bottom: 16px; }
+    .row { display:flex; gap:16px; flex-wrap: wrap; }
+    .col { flex:1; min-width:260px; }
+    label { display:block; font-size: 13px; margin-bottom:6px; color:#b8c0ff; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border:1px solid #2b3150; background:#0f1323; color:#e6e6e6; outline:none; }
+    input:focus, select:focus, textarea:focus { border-color:#5b6eff; box-shadow: 0 0 0 3px #5b6eff22; }
+    .stepper { display:flex; gap:6px; flex-wrap: wrap; margin-bottom:14px;}
+    .step-badge { font-size:12px; padding:6px 10px; border-radius: 999px; background:#0f1323; border:1px solid #2b3150; color:#aab2ff; cursor: pointer; }
+    .step-badge.active { background:#5b6eff; color:white; border-color:#5b6eff; }
+    .btnbar { display:flex; gap:8px; justify-content: flex-end; margin-top: 14px; }
+    .btn { padding:10px 14px; border-radius:10px; border:1px solid #2b3150; background:#0f1323; color:#e6e6e6; cursor:pointer; }
+    .btn.primary { background:#5b6eff; border-color:#5b6eff; color:white; }
+    .btn.warn { background:#ff6b6b; border-color:#ff6b6b; color:white; }
+    .tag { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#0f1323; border:1px solid #2b3150; color:#9aa3ff; margin-right:6px; }
+    .hint { font-size:12px; color:#93a3b8; margin-top: 6px;}
+    .divider { height:1px; background:#22263a; margin: 16px 0;}
+    .title { font-size:18px; margin-bottom:8px;}
+    .subtitle { font-size:13px; color:#93a3b8; margin-bottom:16px;}
+    .error { color:#ff8a8a; font-size:13px; margin-top:6px;}
+    .success { color:#7dffb1; font-size:13px; margin-top:6px;}
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .hidden { display:none !important; }
+    .pill { padding: 8px 12px; border:1px solid #2b3150; border-radius: 999px; background:#0f1323; cursor:pointer; }
+    .pill.active { background:#5b6eff; border-color:#5b6eff; color:white; }
+    details { background:#0f1323; border:1px solid #2b3150; border-radius:10px; padding:10px 14px; }
+    summary { cursor: pointer; font-weight:600; }
+    code { background:#0f1323; color:#c0cbff; padding:2px 6px; border-radius:6px; border:1px solid #2b3150; }
+  </style>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#141722">
+  <link rel="icon" href="icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+</head>
+<body>
+
+<div id="splash" style="
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:#003DA5;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:9999;color:white;font-family:sans-serif;">
+  <img src="https://upload.wikimedia.org/wikipedia/en/6/68/Mutual_of_Omaha_logo.png" alt="MOO Logo" style="max-width:160px;margin-bottom:20px;">
+  <div style="font-size:22px;font-weight:bold;">Mutual of Omaha</div>
+  <div style="font-size:16px;margin-top:6px;">Life e‑App Training</div>
+</div>
+
+<script>
+  function hideSplash(){
+    var s = document.getElementById('splash');
+    if(s){ s.style.display='none'; }
+  }
+  window.addEventListener('load', function(){
+    setTimeout(hideSplash, 2500);
+    var s = document.getElementById('splash');
+    if(s){ s.addEventListener('click', hideSplash); }
+  });
+</script>
+
+
+  <header>
+    <h1>Life e‑App Trainer (MOO‑style) — Training Only • No PHI • No submissions</h1>
+  </header>
+  <main>
+    <div class="card">
+      <div class="stepper" id="stepper"></div>
+      <div id="steps"></div>
+      <div class="btnbar">
+        <button class="btn" id="btnPrev">Back</button>
+        <button class="btn" id="btnSave">Save</button>
+        <button class="btn" id="btnLoad">Load</button>
+        <button class="btn primary" id="btnNext">Next</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title">Trainer Tools</div>
+      <div class="row">
+        <div class="col">
+          <button class="btn" id="btnIGOTog">Toggle “In‑Good‑Order” Hints</button>
+        </div>
+        <div class="col">
+          <button class="btn" id="btnExport">Export Case JSON</button>
+          <button class="btn" id="btnReset">Reset Case</button>
+        </div>
+      </div>
+      <div class="hint">This simulator mirrors a Mutual‑of‑Omaha‑style LIFE e‑App flow (Term Life Express, IUL Express, Living Promise). It’s a standalone offline trainer. Nothing you enter is transmitted; data is stored only in your browser’s localStorage.</div>
+    </div>
+
+    <div class="card">
+      <details>
+        <summary>What’s included (and what isn’t)</summary>
+        <div class="grid2" style="margin-top:10px;">
+          <div>
+            <p><strong>Included:</strong></p>
+            <ul>
+              <li>Product selection: <em>Term Life Express, IUL Express, Living Promise</em></li>
+              <li>Insured &amp; Owner info, Beneficiaries</li>
+              <li>Replacement &amp; Suitability screens</li>
+              <li>Knockout health questions (simplified)</li>
+              <li>Payment (EFT) &amp; draft date checks</li>
+              <li>Disclosures &amp; e‑Signature <em>simulation</em></li>
+              <li>Good‑Order validation &amp; trainer hints</li>
+              <li>Save/Load/Export, progress resume</li>
+            </ul>
+          </div>
+          <div>
+            <p><strong>Not included:</strong></p>
+            <ul>
+              <li>Real carrier rates/illustrations</li>
+              <li>Backend iGO/SPA connectivity</li>
+              <li>State‑specific forms packages</li>
+              <li>Actual submissions or PHI storage</li>
+            </ul>
+          </div>
+        </div>
+        <p class="hint">Training only. Do not enter real SSNs/account numbers. Use dummy data.</p>
+      </details>
+    </div>
+  </main>
+
+<script>
+(function(){
+  // Basic step structure mirroring a MOO life e-App flow
+  const steps = [
+    { id:"welcome", label:"Start", render: renderWelcome, validate: vNone },
+    { id:"quote", label:"Quick Rates", render: renderQuote, validate: vQuote },
+
+    { id:"product", label:"Product", render: renderProduct, validate: vProduct },
+    { id:"insured", label:"Insured", render: renderInsured, validate: vInsured },
+    { id:"owner", label:"Owner", render: renderOwner, validate: vOwner },
+    { id:"beneficiaries", label:"Beneficiaries", render: renderBeneficiaries, validate: vBeneficiaries },
+    { id:"replacement", label:"Replacement", render: renderReplacement, validate: vReplacement },
+    { id:"health", label:"Health Qs", render: renderHealth, validate: vHealth },
+    { id:"payment", label:"Payment", render: renderPayment, validate: vPayment },
+    { id:"disclosures", label:"Disclosures", render: renderDisclosures, validate: vDisclosures },
+    { id:"esign", label:"e‑Sign", render: renderEsign, validate: vEsign },
+    { id:"review", label:"Review", render: renderReview, validate: vReview }
+  ];
+
+  const initialData = {
+    igohints: false,
+    product: { type:"", state:"", tobacco:"No", age:"" },
+    quote: { product:"", state:"", age:"", gender:"", tobacco:"No", solve:"Face", targetFace:"", targetPrem:"", class:"Standard", lpPlan:"Level", resultFace:"", resultPrem:"" },
+    insured: { first:"", last:"", dob:"", ssn4:"", address:"", city:"", state:"", zip:"", phone:"", email:"", gender:"" },
+    owner: { isOther:"No", first:"", last:"", relation:"Self" },
+    beneficiaries: [{ name:"", relation:"", percent: "100" }],
+    replacement: { replacing:"No", details:"" },
+    health: { knockoutAny:"No", height:"", weight:"", buildFlag:"" },
+    payment: { payor:"Insured", bankName:"", routing:"", account:"", mode:"Monthly", draftDate:"", initialDraft:"Issue", billingAddrSame:"Yes" },
+    disclosures: { hipaa:"No", replacementNotice:"No", stateSpecific:"Acknowledged" },
+    esign: { signer:"Insured", otp:"", agreed:"No" }
+  };
+
+  let data = loadLocal() || structuredClone(initialData);
+  let stepIndex = 0;
+
+  const stepper = document.getElementById("stepper");
+  const stepsContainer = document.getElementById("steps");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnNext = document.getElementById("btnNext");
+  const btnSave = document.getElementById("btnSave");
+  const btnLoad = document.getElementById("btnLoad");
+  const btnIGOTog = document.getElementById("btnIGOTog");
+  const btnExport = document.getElementById("btnExport");
+  const btnReset = document.getElementById("btnReset");
+
+  function saveLocal() { localStorage.setItem("moo_life_trainer_case", JSON.stringify(data)); }
+  function loadLocal() {
+    try { return JSON.parse(localStorage.getItem("moo_life_trainer_case")||"null"); } catch(e){ return null; }
+  }
+
+  function renderStepper(){
+    stepper.innerHTML = "";
+    steps.forEach((s, idx)=>{
+      const b = document.createElement("div");
+      b.className = "step-badge" + (idx===stepIndex?" active":"");
+      b.textContent = `${idx+1}. ${s.label}`;
+      b.addEventListener("click",()=>{ stepIndex = idx; render(); });
+      stepper.appendChild(b);
+    });
+  }
+
+  function input(el, labelTxt, key, type="text", attrs={}){
+    const wrap = document.createElement("div");
+    const label = document.createElement("label");
+    label.textContent = labelTxt;
+    const input = document.createElement("input");
+    input.type = type;
+    Object.keys(attrs).forEach(k=> input.setAttribute(k, attrs[k]));
+    input.value = getVal(key)||"";
+    input.addEventListener("input",(e)=> setVal(key, e.target.value));
+    wrap.appendChild(label); wrap.appendChild(input);
+    return wrap;
+  }
+
+  function select(el, labelTxt, key, options){
+    const wrap = document.createElement("div");
+    const label = document.createElement("label");
+    label.textContent = labelTxt;
+    const sel = document.createElement("select");
+    options.forEach(o=>{
+      const opt = document.createElement("option");
+      opt.value = o; opt.textContent = o;
+      if(getVal(key)===o) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change",(e)=> setVal(key, e.target.value));
+    wrap.appendChild(label); wrap.appendChild(sel);
+    return wrap;
+  }
+
+  function hint(text){
+    const p = document.createElement("div");
+    p.className = "hint";
+    p.textContent = text;
+    return p;
+  }
+
+  function section(title, subtitle){
+    const d = document.createElement("div");
+    d.className = "card";
+    const h = document.createElement("div");
+    h.className = "title"; h.textContent = title;
+    d.appendChild(h);
+    if(subtitle){
+      const s = document.createElement("div"); s.className="subtitle"; s.textContent = subtitle; d.appendChild(s);
+    }
+    return d;
+  }
+
+  function getVal(path){
+    const keys = path.split(".");
+    let cur = data;
+    for (let k of keys){ cur = (cur||{})[k]; }
+    return cur;
+  }
+  function setVal(path, value){
+    const keys = path.split(".");
+    let cur = data;
+    for (let i=0;i<keys.length-1;i++){ if(!(keys[i] in cur)) cur[keys[i]] = {}; cur = cur[keys[i]]; }
+    cur[keys[keys.length-1]] = value;
+    if(path.startsWith("product.") || path.startsWith("insured.") || path.startsWith("health.")){
+      // lightweight re-validation triggers
+    }
+    saveLocal();
+  }
+
+  function renderWelcome(container){
+    const sec = section("Start New Case","Simulated iGO flow. Choose product and proceed.");
+    const row = document.createElement("div"); row.className="row";
+    // Quick buttons
+    ["Term Life Express","IUL Express","Living Promise"].forEach(p=>{
+      const btn = document.createElement("button");
+      btn.className = "pill" + (data.product.type===p?" active":"");
+      btn.textContent = p;
+      btn.addEventListener("click",()=>{ data.product.type = p; saveLocal(); render(); });
+      row.appendChild(btn);
+    });
+    sec.appendChild(row);
+    sec.appendChild(hint("Tip: On real SPA/iGO you'd hit ‘Start New Case’, pick product and state."));
+    container.appendChild(sec);
+  }
+
+  function renderProduct(container){
+    const sec = section("Product Details","State, tobacco, age drive eligibility & knockout behavior.");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"Product","product.type",["","Term Life Express","IUL Express","Living Promise"]));
+    row.appendChild(input(null,"Issue State","product.state","text",{placeholder:"FL, PA, etc"}));
+    row.appendChild(select(null,"Tobacco in last 12 months?","product.tobacco",["No","Yes"]));
+    row.appendChild(input(null,"Age (nearest)","product.age","number",{min:"0",max:"90"}));
+    sec.appendChild(row);
+
+    if (data.igohints) {
+      sec.appendChild(hint("IULE: 18–75. TLE: 18–70 (varies). Living Promise: 45–85. Training ranges only."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderInsured(container){
+    const sec = section("Insured Information");
+    const g = document.createElement("div"); g.className="grid3";
+    g.appendChild(input(null,"First Name","insured.first"));
+    g.appendChild(input(null,"Last Name","insured.last"));
+    g.appendChild(select(null,"Gender","insured.gender",["","Male","Female","Other"]));
+    sec.appendChild(g);
+
+    const g2 = document.createElement("div"); g2.className="grid3";
+    g2.appendChild(input(null,"DOB (YYYY-MM-DD)","insured.dob","date"));
+    g2.appendChild(input(null,"SSN (last 4)","insured.ssn4","text",{maxlength:"4",placeholder:"1234"}));
+    g2.appendChild(input(null,"Phone","insured.phone","tel"));
+    sec.appendChild(g2);
+
+    const g3 = document.createElement("div"); g3.className="grid3";
+    g3.appendChild(input(null,"Email","insured.email","email"));
+    g3.appendChild(input(null,"Address","insured.address"));
+    g3.appendChild(input(null,"City","insured.city"));
+    sec.appendChild(g3);
+
+    const g4 = document.createElement("div"); g4.className="grid3";
+    g4.appendChild(input(null,"State","insured.state"));
+    g4.appendChild(input(null,"ZIP","insured.zip","text",{maxlength:"10"}));
+    g4.appendChild(input(null,"Build (Height) e.g. 5'10\"","health.height","text"));
+    sec.appendChild(g4);
+
+    const g5 = document.createElement("div"); g5.className="grid3";
+    g5.appendChild(input(null,"Build (Weight lbs)","health.weight","number",{min:"50",max:"600"}));
+    g5.appendChild(select(null,"Build Flag (auto)","health.buildFlag",["","Standard","Preferred","Decline flag"]));
+    sec.appendChild(g5);
+
+    if (data.igohints){
+      sec.appendChild(hint("Good-Order: SSN4, phone, email, and full address must be complete."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderOwner(container){
+    const sec = section("Owner Information","If owner not insured, provide details");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"Is Owner different from Insured?","owner.isOther",["No","Yes"]));
+    if (data.owner.isOther==="Yes"){
+      const g = document.createElement("div"); g.className="grid3";
+      g.appendChild(input(null,"Owner First","owner.first"));
+      g.appendChild(input(null,"Owner Last","owner.last"));
+      g.appendChild(input(null,"Relation to Insured","owner.relation"));
+      sec.appendChild(g);
+    } else {
+      sec.appendChild(hint("Owner defaulted to Insured (Self)."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderBeneficiaries(container){
+    const sec = section("Beneficiaries","Primary only for training (100% must be allocated).");
+    const list = document.createElement("div");
+    data.beneficiaries.forEach((b, idx)=>{
+      const row = document.createElement("div"); row.className="row";
+      const name = input(null,"Name",`beneficiaries.${idx}.name`);
+      const rel  = input(null,"Relationship",`beneficiaries.${idx}.relation`);
+      const pct  = input(null,"% Allocation",`beneficiaries.${idx}.percent`,"number",{min:"0",max:"100"});
+      const delBtn = document.createElement("button"); delBtn.className="btn warn"; delBtn.textContent="Remove";
+      delBtn.addEventListener("click",()=>{ data.beneficiaries.splice(idx,1); saveLocal(); render(); });
+      row.appendChild(name); row.appendChild(rel); row.appendChild(pct); row.appendChild(delBtn);
+      list.appendChild(row);
+      list.appendChild(document.createElement("div")).className="divider";
+    });
+    const addBtn = document.createElement("button");
+    addBtn.className="btn"; addBtn.textContent="Add Beneficiary";
+    addBtn.addEventListener("click",()=>{ data.beneficiaries.push({name:"",relation:"",percent:"0"}); saveLocal(); render(); });
+    sec.appendChild(list); sec.appendChild(addBtn);
+
+    if (data.igohints){
+      sec.appendChild(hint("Good-Order: Total primary allocation must equal 100%."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderReplacement(container){
+    const sec = section("Replacement & Suitability");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"Is this replacing existing life insurance or annuity?","replacement.replacing",["No","Yes"]));
+    if (data.replacement.replacing==="Yes"){
+      const ta = document.createElement("textarea");
+      ta.rows = 4; ta.placeholder = "Carrier, policy #, reason for replacement...";
+      ta.value = data.replacement.details || "";
+      ta.addEventListener("input",(e)=>{ data.replacement.details = e.target.value; saveLocal(); });
+      sec.appendChild(ta);
+      if (data.igohints) sec.appendChild(hint("State replacement forms required if Yes."));
+    } else {
+      sec.appendChild(hint("No replacement forms needed."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderHealth(container){
+    const sec = section("Health & Knockout");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"Any knockout conditions? (terminal illness, oxygen use, hospice, dementia, etc.)","health.knockoutAny",["No","Yes"]));
+    sec.appendChild(row);
+    const info = document.createElement("div"); info.className="hint";
+    info.textContent = "Training list only: terminal illness, oxygen use, dementia, current cancer treatment, dialysis, transplant, amputation due to diabetes — answer 'Yes' to trigger decline for simplified issue products.";
+    sec.appendChild(info);
+
+    if (data.igohints){
+      sec.appendChild(hint("Automated UW runs on submit in live iGO. Here we simulate eligibility gates."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderPayment(container){
+    const sec = section("Payment & Draft");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"Payor","payment.payor",["Insured","Owner","Other"]));
+    row.appendChild(select(null,"Premium Mode","payment.mode",["Monthly","Quarterly","Semi-Annual","Annual"]));
+    row.appendChild(input(null,"Initial Draft Timing","payment.initialDraft","text",{placeholder:"Issue / Upon Approval"}));
+    const row2 = document.createElement("div"); row2.className="row";
+    row2.appendChild(input(null,"Bank Name","payment.bankName"));
+    row2.appendChild(input(null,"Routing (9 digits)","payment.routing","text",{maxlength:"9"}));
+    row2.appendChild(input(null,"Account # (mask ok)","payment.account","text",{maxlength:"17"}));
+    sec.appendChild(row); sec.appendChild(row2);
+    sec.appendChild(input(null,"Preferred Draft Date (01–28)","payment.draftDate","number",{min:"1",max:"28"}));
+    sec.appendChild(select(null,"Billing Address same as Insured?","payment.billingAddrSame",["Yes","No"]));
+
+    if (data.igohints){
+      sec.appendChild(hint("Good-Order: Routing must pass checksum; draft date 1–28."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderDisclosures(container){
+    const sec = section("Disclosures & Acknowledgements");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"HIPAA Authorization Acknowledged?","disclosures.hipaa",["No","Yes"]));
+    row.appendChild(select(null,"Replacement Notice Delivered (if applicable)?","disclosures.replacementNotice",["No","Yes","N/A"]));
+    row.appendChild(select(null,"State‑Specific Disclosures","disclosures.stateSpecific",["Acknowledged","Pending"]));
+    sec.appendChild(row);
+    if (data.igohints){
+      sec.appendChild(hint("Good-Order: HIPAA must be 'Yes'. Replacement notice required if replacing."));
+    }
+    container.appendChild(sec);
+  }
+
+  function renderEsign(container){
+    const sec = section("e‑Signature (Simulation)");
+    const row = document.createElement("div"); row.className="row";
+    row.appendChild(select(null,"Signer Role","esign.signer",["Insured","Owner","Payor"]));
+    const otp = input(null,"Enter 4‑digit OTP (any)","esign.otp","text",{maxlength:"4"});
+    row.appendChild(otp);
+    row.appendChild(select(null,"Agree to e‑Sign?","esign.agreed",["No","Yes"]));
+    sec.appendChild(row);
+    sec.appendChild(hint("In live iGO, OTP is delivered to email/SMS and SSN4 is validated. This is a simulation."));
+    container.appendChild(sec);
+  }
+
+  function renderReview(container){
+    const sec = section("Review & Good‑Order Check","Resolve errors below to mark case 'In Good Order'.");
+    const ul = document.createElement("ul");
+    const errs = validateAll();
+    if (errs.length){
+      errs.forEach(e=>{
+        const li = document.createElement("li"); li.className="error"; li.textContent = "• " + e; ul.appendChild(li);
+      });
+    } else {
+      const ok = document.createElement("div"); ok.className="success"; ok.textContent = "✅ In Good Order (Training) — Ready for e‑Sign submission in live system.";
+      sec.appendChild(ok);
+    }
+    sec.appendChild(ul);
+
+    // Summary echo
+    const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify(data, null, 2);
+    pre.style.background = "#0b0e19"; pre.style.padding="12px"; pre.style.border="1px solid #22263a"; pre.style.borderRadius="10px"; pre.style.maxHeight="300px"; pre.style.overflow="auto";
+    sec.appendChild(pre);
+
+    container.appendChild(sec);
+  }
+
+  
+
+  function renderQuote(container){
+    const sec = section("Quick Rates (MOO Quotes‑style)","Use the official MOO Quotes app to generate real rates, then paste them here. Selections sync to Product step.");
+    const row1 = document.createElement("div"); row1.className = "row";
+    row1.appendChild(select(null,"Product","quote.product",["","Term Life Express","IUL Express","Living Promise"]));
+    row1.appendChild(input(null,"Issue State","quote.state","text",{placeholder:"FL, PA, etc"}));
+    row1.appendChild(input(null,"Age","quote.age","number",{min:"0",max:"90"}));
+    row1.appendChild(select(null,"Gender","quote.gender",["","Male","Female","Other"]));
+    row1.appendChild(select(null,"Tobacco (12mo)","quote.tobacco",["No","Yes"]));
+    sec.appendChild(row1);
+
+    // Product-specific options
+    const row2 = document.createElement("div"); row2.className="row";
+    row2.appendChild(select(null,"Solve Mode","quote.solve",["Face","Premium"]));
+    if (data.quote.solve==="Face"){
+      row2.appendChild(input(null,"Target Face Amount ($)","quote.targetFace","number",{min:"1000", step:"1000"}));
+    } else {
+      row2.appendChild(input(null,"Target Premium ($/mo)","quote.targetPrem","number",{min:"5", step:"1"}));
+    }
+    row2.appendChild(select(null,"Underwriting Class","quote.class",["Standard","Preferred","Preferred Plus","Substandard"]));
+    if (data.quote.product==="Living Promise"){
+      row2.appendChild(select(null,"Plan","quote.lpPlan",["Level","Graded"]));
+    }
+    sec.appendChild(row2);
+
+    const row3 = document.createElement("div"); row3.className="row";
+    row3.appendChild(input(null,"Result Face Amount ($) from app","quote.resultFace","number",{min:"0", step:"1000"}));
+    row3.appendChild(input(null,"Result Premium ($/mo) from app","quote.resultPrem","number",{min:"0", step:"1"}));
+    sec.appendChild(row3);
+
+    const syncBar = document.createElement("div"); syncBar.className="btnbar";
+    const btnSync = document.createElement("button"); btnSync.className="btn"; btnSync.textContent="Sync to Product Step";
+    btnSync.addEventListener("click", ()=>{
+      // Push quote selections into product step
+      data.product.type = data.quote.product || data.product.type;
+      data.product.state = data.quote.state || data.product.state;
+      data.product.tobacco = data.quote.tobacco || data.product.tobacco;
+      data.product.age = data.quote.age || data.product.age;
+      saveLocal(); alert("Synced to Product step.");
+    });
+    const btnOpen = document.createElement("button"); btnOpen.className="btn"; btnOpen.textContent="How to get real rates";
+    btnOpen.addEventListener("click", ()=>{
+      alert("Get real rates from Mutual of Omaha 'Quotes for Sales Professionals' app (App Store / Google Play). No login needed. Enter the same selections there, then paste the Face/Premium results back here.");
+    });
+    syncBar.appendChild(btnSync); syncBar.appendChild(btnOpen);
+    sec.appendChild(syncBar);
+
+    if (data.igohints){
+      sec.appendChild(hint("Mirror the Quotes app fields here. Use the app to compute the rate; this trainer stores the results and syncs eligibility inputs."));
+    }
+
+    container.appendChild(sec);
+  }
+
+  
+  function vQuote(){
+    // Optional step: if no product selected in Quote, allow skipping validation.
+    const hasAny = (data.quote.product || data.quote.state || data.quote.age || data.quote.gender || data.quote.targetFace || data.quote.targetPrem);
+    if (!hasAny) return [];
+    const e = [];
+    if (!data.quote.product) e.push("Select a product for quoting.");
+    if (!data.quote.state) e.push("Enter issue state for quoting.");
+    if (!data.quote.age) e.push("Enter age for quoting.");
+    if (!data.quote.gender) e.push("Select gender for quoting.");
+    if (data.quote.solve==="Face" && !data.quote.targetFace) e.push("Enter a target face amount.");
+    if (data.quote.solve==="Premium" && !data.quote.targetPrem) e.push("Enter a target premium.");
+    return e;
+  }
+
+
+  function vNone(){ return []; }
+  function vProduct(){
+    const e = [];
+    if (!data.product.type) e.push("Select a product.");
+    if (!data.product.state) e.push("Enter issue state.");
+    if (!data.product.age) e.push("Enter age.");
+    // Simple training eligibility checks
+    const age = Number(data.product.age||0);
+    if (data.product.type==="Living Promise" && (age<45 || age>85)) e.push("Living Promise training range is 45–85.");
+    if (data.product.type==="Term Life Express" && (age<18 || age>70)) e.push("Term Life Express training range is 18–70.");
+    if (data.product.type==="IUL Express" && (age<18 || age>75)) e.push("IUL Express training range is 18–75.");
+    return e;
+  }
+  function vInsured(){
+    const i = data.insured;
+    const e = [];
+    ["first","last","dob","phone","email","address","city","state","zip"].forEach(k=>{ if(!i[k]) e.push(`Insured ${k} is required.`); });
+    if (!/^\d{4}$/.test(i.ssn4||"")) e.push("Enter SSN last 4 digits.");
+    return e;
+  }
+  function vOwner(){
+    const e = [];
+    if (data.owner.isOther==="Yes"){
+      ["first","last","relation"].forEach(k=>{ if(!(data.owner[k]||"").trim()) e.push(`Owner ${k} is required.`); });
+    }
+    return e;
+  }
+  function vBeneficiaries(){
+    const e = [];
+    let total = 0;
+    data.beneficiaries.forEach((b,idx)=>{
+      if (!(b.name||"").trim()) e.push(`Beneficiary ${idx+1}: name required.`);
+      if (!(b.relation||"").trim()) e.push(`Beneficiary ${idx+1}: relationship required.`);
+      const pct = Number(b.percent||0); total += pct;
+      if (pct<=0 || pct>100) e.push(`Beneficiary ${idx+1}: percent must be 1–100.`);
+    });
+    if (total!==100) e.push(`Beneficiary allocation must equal 100% (current total ${total}%).`);
+    return e;
+  }
+  function vReplacement(){
+    const e = [];
+    if (data.replacement.replacing==="Yes" && !(data.replacement.details||"").trim()) e.push("Replacement details required.");
+    return e;
+  }
+  function vHealth(){
+    const e = [];
+    if (!data.health.height) e.push("Enter height.");
+    if (!data.health.weight) e.push("Enter weight.");
+    if (data.health.knockoutAny==="Yes"){
+      e.push("Knockout condition present — case would be declined for simplified issue in live system.");
+    }
+    return e;
+  }
+  function vPayment(){
+    const e = [];
+    if (!data.payment.bankName) e.push("Bank name required.");
+    if (!/^\d{9}$/.test(data.payment.routing||"")) e.push("Routing must be 9 digits.");
+    if (!/^\d{1,17}$/.test(data.payment.account||"")) e.push("Account number required (digits only).");
+    const d = Number(data.payment.draftDate||0);
+    if (!(d>=1 && d<=28)) e.push("Draft date must be 01–28.");
+    return e;
+  }
+  function vDisclosures(){
+    const e = [];
+    if (data.disclosures.hipaa!=="Yes") e.push("HIPAA authorization must be acknowledged.");
+    if (data.replacement.replacing==="Yes" && data.disclosures.replacementNotice!=="Yes") e.push("Replacement notice must be delivered when replacing.");
+    return e;
+  }
+  function vEsign(){
+    const e = [];
+    if (!/^\d{4}$/.test(data.esign.otp||"")) e.push("Enter 4‑digit OTP for simulation.");
+    if (data.esign.agreed!=="Yes") e.push("e‑Sign consent required.");
+    return e;
+  }
+  function vReview(){ return validateAll(); }
+
+  function validateAll(){
+    return [
+      ...vProduct(), ...vInsured(), ...vOwner(), ...vBeneficiaries(),
+      ...vReplacement(), ...vHealth(), ...vPayment(), ...vDisclosures(), ...vEsign()
+    ];
+  }
+
+  function render(){
+    renderStepper();
+    stepsContainer.innerHTML = "";
+    steps[stepIndex].render(stepsContainer);
+    btnPrev.disabled = stepIndex===0;
+    btnNext.textContent = stepIndex===steps.length-1 ? "Finish" : "Next";
+  }
+
+  btnPrev.addEventListener("click",()=>{ if(stepIndex>0){ stepIndex--; render(); } });
+  btnNext.addEventListener("click",()=>{
+    const errs = steps[stepIndex].validate();
+    if (errs.length){
+      alert("Fix these items first:\n\n- " + errs.join("\n- "));
+      return;
+    }
+    if (stepIndex < steps.length-1){ stepIndex++; render(); }
+    else { alert("Training case complete. (No submission performed)"); }
+  });
+  btnSave.addEventListener("click",()=>{ saveLocal(); alert("Saved in this browser."); });
+  btnLoad.addEventListener("click",()=>{
+    const d = loadLocal();
+    if (d){ data = d; alert("Loaded last saved case."); render(); }
+    else alert("No saved case found in this browser.");
+  });
+  btnIGOTog.addEventListener("click",()=>{ data.igohints = !data.igohints; saveLocal(); render(); });
+  btnExport.addEventListener("click",()=>{
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "life_eapp_training_case.json";
+    a.click();
+  });
+  btnReset.addEventListener("click",()=>{
+    if(confirm("Reset this training case?")){ data = structuredClone(initialData); saveLocal(); render(); }
+  });
+
+  render();
+})();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js').catch(function(e){ console.log('SW reg failed', e); });
+    });
+  }
+</script>
+
+</body>
+</html>
