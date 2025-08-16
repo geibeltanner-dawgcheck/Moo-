@@ -5,17 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>MOO Training Simulator</title>
 
-  <!-- Manifest (RELATIVE path + cache-buster) -->
+  <!-- PWA -->
   <link rel="manifest" href="./manifest.webmanifest?v=4" />
   <meta name="theme-color" content="#005BAC" />
-
-  <!-- iOS install bits -->
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="MOO" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
 
-  <!-- iOS splash screens (ALL the sizes) -->
+  <!-- iOS startup images (v=4) -->
   <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.png?v=4"
         media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
   <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2388.png?v=4"
@@ -34,17 +32,15 @@
         media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
   <link rel="apple-touch-startup-image" href="splash/apple-splash-640-1136.png?v=4"
         media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <!-- iPad mini 6 (8.3") -->
   <link rel="apple-touch-startup-image" href="splash/apple-splash-1488-2266.png?v=4"
         media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-  <!-- iPad 10.9 / Air -->
   <link rel="apple-touch-startup-image" href="splash/apple-splash-1640-2360.png?v=4"
         media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <!-- in-app boot overlay (hidden on load) -->
+  <!-- simple boot overlay (hidden when page is ready) -->
   <div id="boot">MOO</div>
 
   <main class="container">
@@ -55,21 +51,21 @@
   </main>
 
   <script>
-    // demo action
+    // demo click
     document.getElementById('start').addEventListener('click', () => {
       document.getElementById('out').textContent = 'Form simulation coming soon…';
       alert('Form simulation coming soon!');
     });
 
-    // hide boot once loaded
+    // hide boot when loaded
     window.addEventListener('load', () => {
       const boot = document.getElementById('boot');
       if (boot) boot.style.display = 'none';
     });
 
-    // register service worker (relative path)
+    // register service worker (v4 cache is inside sw.js)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      navigator.serviceWorker.register('./sw.js');
     }
   </script>
 </body>
