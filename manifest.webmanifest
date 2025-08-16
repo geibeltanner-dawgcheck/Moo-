@@ -1,12 +1,12 @@
 {
   "name": "MOO Training Simulator",
   "short_name": "MOO",
-  "start_url": "/Moo-dawg/",
+  "start_url": "./",
+  "scope": "./",
   "background_color": "#000000",
   "theme_color": "#000000",
   "display": "standalone",
   "orientation": "portrait",
-  "scope": "/Moo-dawg/",
   "icons": [
     {
       "src": "icons/icon-192.png",
