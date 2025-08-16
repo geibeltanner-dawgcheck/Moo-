@@ -1,25 +1,29 @@
-const CACHE = 'moo-trainer-v1';
+// Simple cache for trainer
+const CACHE = 'moo-cache-v5';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
+  './style.css',
   './app.js',
-  './manifest.webmanifest',
-  './assets/brand/logo.png',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png'
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
-self.addEventListener('install', e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
 });
-self.addEventListener('activate', e=>{
+
+self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE?caches.delete(k):null)))
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
   );
 });
-self.addEventListener('fetch', e=>{
+
+self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(r=> r || fetch(e.request))
+    caches.match(e.request, { ignoreSearch:true })
+      .then(r => r || fetch(e.request))
   );
 });
