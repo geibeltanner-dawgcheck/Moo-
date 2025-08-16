@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MOO Training Simulator</title>
 
-  <!-- PWA manifest + theme -->
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#000000">
+  <!-- Manifest + theme (RELATIVE paths for GitHub Pages subfolder) -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#005BAC" />
 
-  <!-- iOS support -->
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- iOS install bits -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="MOO" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-  <!-- Splash screens -->
+  <!-- iOS splash screens -->
   <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.png"
         media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
   <link rel="apple-touch-startup-image" href="splash/apple-splash-1668-2388.png"
@@ -34,18 +35,36 @@
   <link rel="apple-touch-startup-image" href="splash/apple-splash-640-1136.png"
         media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <h1>Mutual of Omaha Training Simulator</h1>
-  <p>This is the practice environment for new agents.</p>
+  <!-- simple in-app boot screen (hidden when loaded) -->
+  <div id="boot">MOO</div>
 
-  <button onclick="alert('Form simulation coming soon!')">Start Demo App</button>
+  <main class="container">
+    <h1>Mutual of Omaha Training Simulator</h1>
+    <p>This is the practice environment for new agents.</p>
+
+    <button id="start">Start Demo</button>
+    <div id="out"></div>
+  </main>
 
   <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js")
-        .catch(err => console.error("SW fail", err));
+    // demo logic
+    document.getElementById('start').addEventListener('click', () => {
+      document.getElementById('out').textContent = 'Form simulation coming soon…';
+      alert('Form simulation coming soon!');
+    });
+
+    // hide boot overlay when page is ready
+    window.addEventListener('load', () => {
+      const boot = document.getElementById('boot');
+      if (boot) boot.style.display = 'none';
+    });
+
+    // register service worker (RELATIVE path)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
     }
   </script>
 </body>
