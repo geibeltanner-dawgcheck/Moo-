@@ -1,297 +1,299 @@
-// ------- GLOBAL STATE -------
-const screens=[...document.querySelectorAll('.screen')];
-let step=0;
-const LIMITS={term:300000,iul:300000,whole:50000};
-const NAMES={term:'Term Life Express', iul:'Indexed Universal Life Express', whole:'Whole Life Express'};
+/* MOO Trainer – single-page stepper */
+const $ = (sel, ctx=document) => ctx.querySelector(sel);
+const $$ = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
 
-// Simple rates (swap with real tables when you hand me sheets)
-const RATES={
-  term:{ // assume 20-year for trainer; termYears select exists if you want to branch later
-    policyFeeAnnual:60,
-    monthlyFactorFromAnnual:0.089,
-    per1000Annual:{
-      male:{
-        nonsmoker:{30:2.20,35:2.75,40:3.32,45:4.80,50:7.53,55:12.90,60:20.97},
-        smoker:   {30:4.40,35:5.30,40:6.60,45:9.60,50:14.46,55:24.80,60:37.63}
-      },
-      female:{
-        nonsmoker:{30:2.05,35:2.55,40:3.12,45:4.30,50:7.07,55:11.90,60:19.69},
-        smoker:   {30:3.90,35:4.90,40:6.19,45:8.90,50:13.58,55:22.80,60:35.33}
-      }
-    }
-  },
-  whole:{
-    policyFeeAnnual:36,
-    monthlyFactorFromAnnual:0.089,
-    per1000Annual:{
-      male:{
-        nonsmoker:{40:25.00,50:35.00,55:41.00,60:53.00,65:68.00,70:95.00},
-        smoker:   {40:35.00,50:46.00,55:58.00,60:80.00,65:111.00,70:154.00}
-      },
-      female:{
-        nonsmoker:{40:19.50,50:25.00,55:32.00,60:40.00,65:51.00,70:67.00},
-        smoker:   {40:24.00,50:33.00,55:40.00,60:51.00,65:72.00,70:108.00}
-      }
-    }
-  },
-  iul:{
-    policyFeeMonthly:5.00,
-    per1000Monthly:{
-      male:{  nonsmoker:{35:0.50,40:0.53,50:0.90}, smoker:{35:0.75,40:0.80,50:1.30} },
-      female:{nonsmoker:{35:0.37,40:0.45,50:0.75}, smoker:{35:0.55,40:0.65,50:1.05} }
-    }
-  }
-};
-
-// ------- NAV -------
-function show(i){ screens.forEach((s,idx)=>s.classList.toggle('active',idx===i)); step=i; window.scrollTo({top:0,behavior:'instant'}); }
-document.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click', ()=>{ if(validate(step)) show(step+1); }));
-document.querySelectorAll('[data-prev]').forEach(b=>b.addEventListener('click', ()=>show(Math.max(0,step-1))));
-document.getElementById('btnStart').onclick=()=>show(1);
-// Kill splash after a beat
-setTimeout(()=>document.getElementById('splash').style.display='none', 800);
-
-// Product-specific UI toggles
-const productType=document.getElementById('productType');
-const termWrap=document.getElementById('termWrap');
-const maxAllowedEl=document.getElementById('maxAllowed');
-const planName=document.getElementById('planName');
-productType.addEventListener('change',()=>{
-  const p=productType.value;
-  termWrap.hidden = p!=='term';
-  planName.value = NAMES[p]||'';
-  maxAllowedEl.textContent = p ? '$'+LIMITS[p].toLocaleString() : '--';
-});
-
-// Age from DOB
-const piDOB=document.getElementById('piDOB');
-const piAge=document.getElementById('piAge');
-piDOB.addEventListener('input',()=>{ piAge.value = calcAge(piDOB.value)||''; });
-function calcAge(dobStr){
-  const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dobStr||''); if(!m) return 0;
-  const d=new Date(+m[3],+m[1]-1,+m[2]); const t=new Date();
-  let a=t.getFullYear()-d.getFullYear(); const before=(t.getMonth()<d.getMonth())||(t.getMonth()==d.getMonth()&&t.getDate()<d.getDate());
-  return before? a-1:a;
-}
-
-// HIPAA PIN
-document.getElementById('genPIN').onclick=()=>{ document.getElementById('hipPin').value=(''+Math.floor(1000+Math.random()*9000)); };
-
-// Tables add/remove helpers
-function addRow(tbody, cols){
-  const tr=document.createElement('tr');
-  cols.forEach(el=>{ const td=document.createElement('td'); td.appendChild(el); tr.appendChild(td); });
-  const td=document.createElement('td'); const del=document.createElement('button'); del.className='btn'; del.textContent='Delete';
-  del.onclick=()=>tr.remove(); td.appendChild(del); tr.appendChild(td); tbody.appendChild(tr);
-}
-document.getElementById('btnAddPolicy').onclick=()=>{
-  const c=document.createElement('input'); const n=document.createElement('input'); const f=document.createElement('input');
-  c.type='text'; n.type='text'; f.type='number'; f.step='1000';
-  addRow(document.querySelector('#tblPolicies tbody'), [c,n,f]);
-};
-document.getElementById('btnAddPrimary').onclick=()=>{
-  addRow(document.querySelector('#tblPrimary tbody'), [inp(),inp(),num(0,100)]);
-};
-document.getElementById('btnAddCont').onclick=()=>{
-  addRow(document.querySelector('#tblCont tbody'), [inp(),inp(),num(0,100)]);
-};
-function inp(){ const x=document.createElement('input'); x.type='text'; return x; }
-function num(min,max){ const x=document.createElement('input'); x.type='number'; if(min!=null)x.min=min; if(max!=null)x.max=max; return x; }
-document.querySelectorAll('input[name="hasCont"]').forEach(r=>r.addEventListener('change',e=>{
-  document.getElementById('contWrap').hidden = e.target.value!=='Yes';
-}));
-
-// UW questions (placeholder list; you’ll send exact product sets later)
-const UW_QUESTIONS=[
-  'In past 5 years, diagnosis/treatment for cancer, heart attack, stroke, or COPD?',
-  'Currently in hospital, hospice, or nursing facility?',
-  'Advised to have test/treatment/surgery not yet completed?',
-  'Use of oxygen equipment (excl. CPAP) or dialysis?',
-  'In past 12 months, DUI or felony?',
-  'Pending surgery or medical testing not reviewed by a physician?',
-  'In past 2 years, used illicit drugs other than as prescribed?',
-  'In past 2 years, declined or rated for life insurance?'
+const STEPS = [
+  'step-0','step-1','step-2','step-3','step-4','step-5','step-6','step-7',
+  'step-8','step-9','step-10','step-11','step-12','step-13','step-14',
+  'step-15','step-16','step-17'
 ];
-const uwList=document.getElementById('uwList');
-UW_QUESTIONS.forEach((q,i)=>{
-  const fs=document.createElement('div'); fs.className='card';
-  fs.innerHTML=`
-    <b>Q${i+1}.</b> ${q}<br>
-    <label class="inline"><input type="radio" name="uw${i}" value="No" required> No</label>
-    <label class="inline"><input type="radio" name="uw${i}" value="Yes"> Yes</label>
-    <div id="uw${i}note" hidden><label>Notes<textarea></textarea></label></div>
-  `;
-  uwList.appendChild(fs);
-  fs.querySelectorAll(`input[name="uw${i}"]`).forEach(r=>r.addEventListener('change',e=>{
-    fs.querySelector(`#uw${i}note`).hidden = e.target.value!=='Yes';
-  }));
-});
 
-// Beneficiaries contingent toggle handled above
+const LIMITS = { TLE: 300000, IULE: 300000, WLE: 50000 };
 
-// Premium Summary auto-fill
-const summaryPI=document.getElementById('summaryPI');
-const summaryPlan=document.getElementById('summaryPlan');
-const faceAmt=document.getElementById('faceAmt');
-const piGender=document.getElementById('piGender');
-const piMailState=document.getElementById('piMailState');
-const piState=document.getElementById('piState');
-function fillSummaries(){
-  const name = `${val('piFirst')} ${val('piLast')}`.trim()||'--';
-  const g = valSel(piGender) || '--';
-  const addr = `${val('piAddr')||''}, ${val('piCity')||''} ${val('piMailState')||''} ${val('piZip')||''}`.replace(/^[,\s]+|[,\s]+$/g,'')||'--';
-  summaryPI.innerHTML = `
-    <div><b>Name:</b> ${name}</div>
-    <div><b>DOB:</b> ${val('piDOB')||'--'} (Age ${val('piAge')||'--'})</div>
-    <div><b>Gender:</b> ${g}</div>
-    <div><b>Address:</b> ${addr}</div>
-  `;
-  summaryPlan.innerHTML = `
-    <div><b>Plan:</b> ${val('planName')||'--'}</div>
-    <div><b>Face Amount:</b> $${(+val('faceAmt')||0).toLocaleString()}</div>
-    <div><b>Tobacco:</b> ${val('piTob')||'--'}</div>
-  `;
-}
-function val(id){ const el=document.getElementById(id); return el?el.value:''; }
-function valSel(el){ return el?el.value:''; }
-
-// Calculator
-document.getElementById('btnCalcPremium').onclick = ()=>{
-  try{
-    const quote = computeMonthly();
-    const out=document.getElementById('premResults');
-    out.innerHTML = `
-      <div><b>Monthly (EFT):</b> ${money(quote.monthly)}</div>
-      <div><b>Quarterly:</b> ${money(quote.monthly*3)}</div>
-      <div><b>Semi-Annual:</b> ${money(quote.monthly*6)}</div>
-      <div><b>Annual:</b> ${money(quote.monthly*12)}</div>
-      <div class="muted" style="margin-top:6px">Trainer calc: monthly is base; others are multiples.</div>
-    `;
-    const amountQuoted=document.getElementById('amountQuoted');
-    if(amountQuoted) amountQuoted.value = quote.monthly.toFixed(2);
-  }catch(e){
-    document.getElementById('premResults').innerHTML = `<div class="alert err">${e.message}</div>`;
-  }
+const state = {
+  current: 0,
+  data: {}
 };
 
-function nearestKey(obj, age){
-  const keys=Object.keys(obj).map(n=>+n).sort((a,b)=>a-b);
-  let best=keys[0]; for(const k of keys){ if(age>=k) best=k; else break; } return best;
-}
-function money(n){ return '$'+(isFinite(n)? n.toFixed(2):'--'); }
+const el = {
+  back: $('#backBtn'),
+  next: $('#nextBtn'),
+  label: $('#stepLabel'),
+  steps: STEPS.map(id => $('#'+id)),
+  caseForm: $('#caseForm'),
+  planForm: $('#planForm'),
+  maxCoverageNote: $('#maxCoverageNote'),
+  summaryPI: $('#summaryPI'),
+  summaryPlan: $('#summaryPlan'),
+  modes: $('#modes'),
+  uwQuestions: $('#uwQuestions'),
+  rowDialog: $('#rowDialog'),
+  rowForm: $('#rowForm')
+};
 
-function computeMonthly(){
-  const pkey=(productType.value||'').toLowerCase();
-  if(!pkey) throw new Error('Select product.');
-  const state=(val('piState')||val('piMailState')||'').toUpperCase();
-  let gender=(valSel(piGender)||'').toLowerCase();
-  const tob=(val('piTob')==='Yes')?'smoker':'nonsmoker';
-  const age= +val('piAge') || calcAge(val('piDOB'));
-  const face= +val('faceAmt');
-
-  if(!age||age<18) throw new Error('Enter valid DOB/age.');
-  if(!face) throw new Error('Enter face amount.');
-  if(face>LIMITS[pkey]) throw new Error(`Face exceeds Express limit ($${LIMITS[pkey].toLocaleString()}).`);
-  // MT unisex = male table
-  if(state==='MT') gender='male';
-  if(gender!=='male' && gender!=='female') throw new Error('Select gender.');
-
-  let monthly=0;
-  if(pkey==='iul'){
-    const table=RATES.iul.per1000Monthly[gender][tob];
-    const k=nearestKey(table,age); const per1k=table[k];
-    monthly = per1k*(face/1000) + RATES.iul.policyFeeMonthly;
-  } else if(pkey==='term'){
-    const table=RATES.term.per1000Annual[gender][tob];
-    const k=nearestKey(table,age); const per1kA=table[k];
-    const annual = per1kA*(face/1000) + RATES.term.policyFeeAnnual;
-    monthly = annual * RATES.term.monthlyFactorFromAnnual;
-  } else if(pkey==='whole'){
-    const table=RATES.whole.per1000Annual[gender][tob];
-    const k=nearestKey(table,age); const per1kA=table[k];
-    const annual = per1kA*(face/1000) + RATES.whole.policyFeeAnnual;
-    monthly = annual * RATES.whole.monthlyFactorFromAnnual;
-  }
-  return {monthly};
+// basic nav
+function show(i){
+  state.current = i;
+  el.steps.forEach((s,idx) => s.hidden = idx !== i);
+  const label = el.steps[i].dataset.label || 'MOO';
+  el.label.textContent = label;
+  el.back.disabled = i === 0;
+  el.next.textContent = i === STEPS.length-1 ? 'Finish' : 'Next →';
+  // on-enter hooks per step
+  if (STEPS[i] === 'step-8') updateMaxCoverage();
+  if (STEPS[i] === 'step-10') buildUW();
+  if (STEPS[i] === 'step-12') fillSummaries();
 }
 
-// Validate by step
-function validate(i){
-  switch(i){
-    case 1: // case
-      if(!val('piState')||!productType.value) return err('Select state and product.');
-      if(productType.value==='term' && !val('termYears')) return err('Pick term length.');
-      planName.value = NAMES[productType.value]||'';
-      maxAllowedEl.textContent = '$'+LIMITS[productType.value].toLocaleString();
+function next(){
+  if (!validateStep()) return;
+  if (state.current < STEPS.length-1) show(state.current+1);
+}
+function back(){ if (state.current>0) show(state.current-1); }
+
+el.next.addEventListener('click', next);
+el.back.addEventListener('click', back);
+$$('[data-action="startDemo"]').forEach(b=>b.addEventListener('click',()=>show(1)));
+$$('[data-action="goto"]').forEach(b=>b.addEventListener('click',()=>show(STEPS.indexOf(b.dataset.target))));
+
+// small helpers
+function flash(elm){ elm.style.outline='2px solid #ffb3b3'; setTimeout(()=>elm.style.outline='none', 1200); }
+
+// validation minimal per step
+function validateStep(){
+  switch(STEPS[state.current]){
+    case 'step-2': {
+      const f = el.caseForm;
+      if(!f.reportValidity()) return false;
+      state.data.product = f.product.value;
+      state.data.state = f.state.value;
+      state.data.pi = {
+        first: f.pi_first.value.trim(),
+        last:  f.pi_last.value.trim(),
+        dob:   f.pi_dob.value,
+        age:   +f.pi_age.value,
+        gender:f.pi_gender.value
+      };
       return true;
-    case 2: return true;
-    case 3:
-      if(!val('piFirst')||!val('piLast')||!val('piDOB')||!valSel(piGender)) return err('Complete proposed insured basics.');
-      piAge.value = calcAge(val('piDOB'))||'';
+    }
+    case 'step-3': {
+      const f = $('#producerForm');
+      if(!f.reportValidity()) return false;
+      state.data.producer = Object.fromEntries(new FormData(f).entries());
       return true;
-    case 7: // plan info
-      if(!val('faceAmt')) return err('Enter face amount.');
-      const p=productType.value; const fa=+val('faceAmt');
-      if(fa>LIMITS[p]) return err(`Face exceeds limit for ${NAMES[p]}.`);
+    }
+    case 'step-4': {
+      const f = $('#piForm');
+      if(!f.reportValidity()) return false;
+      Object.assign(state.data.pi, Object.fromEntries(new FormData(f).entries()));
       return true;
-    case 10: // bene: percent sanity (optional)
+    }
+    case 'step-6': {
+      const f = $('#piContForm');
+      if(!f.reportValidity()) return false;
+      Object.assign(state.data.pi, Object.fromEntries(new FormData(f).entries()));
       return true;
-    case 11:
-      fillSummaries(); return true;
+    }
+    case 'step-7': {
+      // store history items
+      state.data.history = collectRows('#historyList');
+      return true;
+    }
+    case 'step-8': {
+      const f = el.planForm;
+      if (!f.reportValidity()) return false;
+      const face = +f.face.value;
+      const lim = LIMITS[state.data.product] || 0;
+      if (face<=0 || face>lim){
+        alert(`Enter face amount ≤ ${lim.toLocaleString()}.`);
+        flash(f.face); return false;
+      }
+      state.data.plan = { face };
+      return true;
+    }
+    case 'step-9': return true; // favorable page
+    case 'step-10': {
+      // collect underwriting answers
+      const answers = {};
+      $$('#uwQuestions input[type=radio]:checked').forEach(r=>{
+        const k = r.name; answers[k] = r.value;
+      });
+      state.data.uw = answers;
+      return true;
+    }
+    case 'step-11': {
+      state.data.beneficiaries = collectRows('#beneList');
+      return true;
+    }
+    case 'step-12': {
+      // mode selection saved
+      const mode = $('input[name="mode"]:checked')?.value || 'MONTHLY';
+      state.data.mode = mode;
+      return true;
+    }
+    case 'step-13': {
+      state.data.ach = Object.fromEntries(new FormData($('#achForm')).entries());
+      return true;
+    }
     default: return true;
   }
 }
-function err(msg){ alert(msg); return false; }
 
-// Contingent toggle
-document.querySelectorAll('input[name="hasCont"]').forEach(r=>{
-  r.addEventListener('change',e=>{ document.getElementById('contWrap').hidden = e.target.value!=='Yes'; });
-});
+function updateMaxCoverage(){
+  const p = state.data.product;
+  const lim = LIMITS[p] || 0;
+  el.maxCoverageNote.textContent = `Max coverage allowed: ${lim.toLocaleString()}`;
+}
 
-// Producer prev addresses
-document.getElementById('btnAddAddr').onclick=()=>{
-  const row=document.createElement('tr');
-  ['Street','City','State','Zip','From','To'].forEach(_=>{
-    const td=document.createElement('td'); const x=document.createElement('input'); x.type='text'; td.appendChild(x); row.appendChild(td);
+// Lock data (simulated)
+$$('[data-action="lockData"]').forEach(b=>b.addEventListener('click', next));
+
+// ==== Underwriting questions (training set, product-specific) ====
+const UW = {
+  TLE: [
+    {k:'t1', q:'In the last 2 years, diagnosed/treated for cancer, heart attack, stroke, or TIA?', y='Yes', n='No'},
+    {k:'t2', q:'Currently hospitalized, in a nursing facility, or receiving hospice care?', y:'Yes', n:'No'},
+    {k:'t3', q:'Have you used tobacco/nicotine in the last 12 months?', y:'Yes', n:'No'}
+  ],
+  WLE: [
+    {k:'w1', q:'In the last 12 months, advised to have tests/surgery not yet completed?', y:'Yes', n:'No'},
+    {k:'w2', q:'Have you been declined for life insurance in the past 2 years?', y:'Yes', n:'No'},
+    {k:'w3', q:'Use of oxygen equipment to assist with breathing?', y:'Yes', n:'No'}
+  ],
+  IULE: [
+    {k:'u1', q:'In the past 5 years, diagnosed/treated for diabetes with complications, cancer, or heart disease?', y:'Yes', n:'No'},
+    {k:'u2', q:'Any DUI or felony conviction in the past 5 years?', y:'Yes', n:'No'},
+    {k:'u3', q:'Any pending surgery or medical tests?', y:'Yes', n:'No'}
+  ]
+};
+
+function buildUW(){
+  const list = UW[state.data.product] || [];
+  el.uwQuestions.innerHTML = list.map(it => `
+    <fieldset class="inline">
+      <legend>${it.q}</legend>
+      <label><input type="radio" name="${it.k}" value="Yes"> Yes</label>
+      <label><input type="radio" name="${it.k}" value="No"> No</label>
+    </fieldset>
+  `).join('') || '<div class="note">No questions configured.</div>';
+}
+
+// ==== Beneficiaries & History rows (modal) ====
+function openRowDialog(prefill={}){
+  el.rowForm.reset();
+  Object.entries(prefill).forEach(([k,v])=>{
+    const f = el.rowForm.elements[k]; if (f) f.value = v;
   });
-  const td=document.createElement('td'); const del=document.createElement('button'); del.className='btn'; del.textContent='Delete'; del.onclick=()=>row.remove(); td.appendChild(del); row.appendChild(td);
-  document.querySelector('#tblPrevAddr tbody').appendChild(row);
-};
-
-// Producer signature pad
-const sigPad=document.getElementById('sigPad'); let ctx=null,drawing=false,signed=false;
-document.getElementById('prodFinger').addEventListener('change',e=>{
-  const on=e.target.value==='Yes'; document.getElementById('sigWrap').hidden=!on; if(on) initPad();
-});
-function initPad(){
-  const ratio=window.devicePixelRatio||1;
-  sigPad.width = sigPad.clientWidth*ratio; sigPad.height=sigPad.clientHeight*ratio;
-  ctx=sigPad.getContext('2d'); ctx.scale(ratio,ratio); ctx.lineWidth=2; ctx.lineCap='round';
+  return el.rowDialog.showModal();
 }
-function pos(e){ const r=sigPad.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left, y:t.clientY-r.top}; }
-function start(e){ if(!ctx) return; drawing=true; const {x,y}=pos(e); ctx.beginPath(); ctx.moveTo(x,y); e.preventDefault(); }
-function move(e){ if(!drawing||!ctx) return; const {x,y}=pos(e); ctx.lineTo(x,y); ctx.stroke(); signed=true; e.preventDefault(); }
-function end(){ drawing=false; }
-if(sigPad){
-  sigPad.addEventListener('mousedown',start); sigPad.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
-  sigPad.addEventListener('touchstart',start,{passive:false}); sigPad.addEventListener('touchmove',move,{passive:false}); sigPad.addEventListener('touchend',end);
+function addRow(listSel, row){
+  const host = $(listSel);
+  const item = document.createElement('div');
+  item.className = 'rowline';
+  item.innerHTML = `
+    <div class="summary">
+      <strong>Name</strong><span>${row.name}</span>
+      <strong>Relationship</strong><span>${row.rel}</span>
+      <strong>% Share</strong><span>${row.share}</span>
+    </div>
+    <div style="display:flex; gap:8px; margin:6px 0 14px;">
+      <button class="secondary" data-edit>Edit</button>
+      <button data-del>Delete</button>
+    </div>
+  `;
+  item.querySelector('[data-edit]').onclick = async () => {
+    openRowDialog(row);
+    el.rowDialog.addEventListener('close', () => {
+      if (el.rowDialog.returnValue === 'ok'){
+        const data = Object.fromEntries(new FormData(el.rowForm).entries());
+        row.name=data.name; row.rel=data.rel; row.share=data.share;
+        item.querySelector('.summary').innerHTML = `
+          <strong>Name</strong><span>${row.name}</span>
+          <strong>Relationship</strong><span>${row.rel}</span>
+          <strong>% Share</strong><span>${row.share}</span>`;
+      }
+    }, {once:true});
+  };
+  item.querySelector('[data-del]').onclick = () => item.remove();
+  host.appendChild(item);
 }
-document.getElementById('clearSig').onclick=()=>{ if(ctx){ initPad(); signed=false; } };
-document.getElementById('applySig').onclick=()=>alert('Signature captured (trainer).');
-document.getElementById('submitApp').onclick=()=>{
-  const msg=document.getElementById('submitMsg'); msg.hidden=false; msg.textContent='Application submitted (trainer).';
-  document.getElementById('policyNum').textContent='Policy Number: BU'+Math.floor(100000+Math.random()*900000);
-};
+function collectRows(sel){
+  return $$(sel+' .rowline').map(line=>{
+    const parts = [...line.querySelectorAll('.summary span')].map(s=>s.textContent.trim());
+    return { name: parts[0], rel: parts[1], share: parts[2] };
+  });
+}
 
-// Install prompt button (optional)
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault(); deferredPrompt=e; const b=document.getElementById('btnInstall'); b.hidden=false;
-  b.onclick=async ()=>{ deferredPrompt.prompt(); deferredPrompt=null; b.hidden=true; };
+$('[data-action="addBene"]').addEventListener('click', async () => {
+  openRowDialog();
+  el.rowDialog.addEventListener('close', () => {
+    if (el.rowDialog.returnValue === 'ok'){
+      const data = Object.fromEntries(new FormData(el.rowForm).entries());
+      addRow('#beneList', data);
+    }
+  }, {once:true});
 });
 
-// Show summaries when landing on premium screen
-const observer=new MutationObserver(()=>{
-  if(screens[11].classList.contains('active')) fillSummaries();
+$('[data-action="addHistory"]').addEventListener('click', async () => {
+  openRowDialog({share: 'Face Amount'});
+  el.rowDialog.addEventListener('close', () => {
+    if (el.rowDialog.returnValue === 'ok'){
+      const d = Object.fromEntries(new FormData(el.rowForm).entries());
+      addRow('#historyList', { name:d.name, rel:d.rel, share:d.share });
+    }
+  }, {once:true});
 });
-observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+
+// ==== Premium summary & simple trainer quote ====
+function fillSummaries(){
+  const { pi, product, plan } = state.data;
+  el.summaryPI.innerHTML = `
+    <div><strong>Issue State</strong><span>${state.data.state || ''}</span></div>
+    <div><strong>Age</strong><span>${pi?.age ?? ''}</span></div>
+    <div><strong>Gender</strong><span>${pi?.gender ?? ''}</span></div>
+  `;
+  const planName = product === 'TLE' ? 'Term Life Express'
+    : product === 'WLE' ? 'Whole Life Express'
+    : 'Indexed Universal Life Express';
+  const tobacco = $('input[name="pi_tobacco"]:checked')?.value === 'Yes' ? 'Tobacco' : 'Nontobacco';
+  el.summaryPlan.innerHTML = `
+    <div><strong>Plan</strong><span>${planName}</span></div>
+    <div><strong>Face Amount</strong><span>$${(+plan?.face||0).toLocaleString()}</span></div>
+    <div><strong>Tobacco Status</strong><span>${tobacco}</span></div>
+  `;
+}
+
+function baseRatePerThousand(age, product){
+  // Training-only dummy rates (NOT real MOO pricing)
+  const a = Math.max(18, Math.min(80, +age||40));
+  if (product === 'TLE')  return 0.35 + 0.01*(a-30);
+  if (product === 'WLE')  return 0.80 + 0.02*(a-30);
+  if (product === 'IULE') return 0.50 + 0.015*(a-30);
+  return 0.5;
+}
+
+function quoteMonthly(age, product, face, tobacco){
+  const rate = baseRatePerThousand(age, product);
+  const mult = tobacco ? 1.5 : 1.0;
+  return Math.max(5, Math.round(((face/1000)*rate*mult)*100)/100);
+}
+
+function formatMoney(n){ return `$${n.toFixed(2)}`; }
+
+$$('[data-action="calcPremiums"]').forEach(btn => btn.addEventListener('click', () => {
+  const { pi, product, plan } = state.data;
+  const tobacco = $('input[name="pi_tobacco"]:checked')?.value === 'Yes';
+  const m = quoteMonthly(pi?.age, product, +plan?.face||0, tobacco);
+  const annual = +(m*12).toFixed(2);
+  const semi   = +(annual/2).toFixed(2);
+  const quarter= +(annual/4).toFixed(2);
+
+  el.modes.hidden = false;
+  el.modes.querySelector('[data-mode="MONTHLY"]').textContent = formatMoney(m);
+  el.modes.querySelector('[data-mode="ANNUAL"]').textContent  = formatMoney(annual);
+  el.modes.querySelector('[data-mode="SEMI"]').textContent    = formatMoney(semi);
+  el.modes.querySelector('[data-mode="QUARTER"]').textContent = formatMoney(quarter);
+}));
+
+// init
+show(0);
