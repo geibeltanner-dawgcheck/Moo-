@@ -6,13 +6,14 @@
   <meta name="theme-color" content="#1b4f72" />
   <title>DAWGCHECK Training Simulator</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=2025.08.24.1" />
+  <link rel="stylesheet" href="styles.css?v=2025.08.24.2" />
 </head>
 <body>
   <!-- Top App Bar -->
   <header class="topbar" role="banner">
     <div class="brand">
-      <img src="assets/dawgcheck-logo.png" alt="DAWGCHECK" class="brand__logo" />
+      <!-- Use an existing repo icon so the header logo always loads -->
+      <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="brand__logo" />
       <div class="brand__text">
         <strong>DAWGCHECK</strong>
         <span>Training Simulator</span>
@@ -23,7 +24,7 @@
       <div class="divider" aria-hidden="true"></div>
       <button class="link" type="button" data-action="help">Need Assistance?</button>
       <div class="divider" aria-hidden="true"></div>
-      <span class="welcome">Welcome TANNER GEIBEL</span>
+      <span class="welcome" id="welcome-text">Welcome</span>
     </nav>
   </header>
 
@@ -32,36 +33,18 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
-          <img src="assets/dawgcheck-logo.png" alt="DAWGCHECK" class="login-logo" />
+          <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="login-logo" />
           <h1>DAWGCHECK Training Simulator</h1>
           <p>Professional Insurance Application Training</p>
         </div>
         <form class="login-form" autocomplete="off">
           <div class="form-group">
             <label for="login-first">First Name</label>
-            <input 
-              type="text" 
-              id="login-first" 
-              name="first-name" 
-              autocomplete="off" 
-              autocorrect="off" 
-              autocapitalize="off" 
-              spellcheck="false"
-              required 
-            />
+            <input type="text" id="login-first" required />
           </div>
           <div class="form-group">
             <label for="login-last">Last Name</label>
-            <input 
-              type="text" 
-              id="login-last" 
-              name="last-name" 
-              autocomplete="off" 
-              autocorrect="off" 
-              autocapitalize="off" 
-              spellcheck="false"
-              required 
-            />
+            <input type="text" id="login-last" required />
           </div>
           <button type="button" id="btn-login" class="btn btn--primary btn--large">
             Enter Training Simulator
@@ -77,539 +60,540 @@
   <!-- App Layout -->
   <div class="view app-view" data-view="home" hidden>
     <div class="app-layout">
-    <!-- Sidebar: Stepper Navigation -->
-    <aside id="sidebar" aria-label="Application steps">
-      <ol id="step-list" class="stepper" role="tablist" aria-orientation="vertical">
-        <li class="step is-active" role="tab" aria-selected="true" tabindex="0" data-step="producer">
-          <span class="dot">1</span><span>Producer Information</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="insured">
-          <span class="dot">2</span><span>Proposed Insured</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="confirm-id">
-          <span class="dot">3</span><span>Confirm Identity</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="hipaa-lock">
-          <span class="dot">4</span><span>HIPAA Signature & Lock</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="hipaa-method">
-          <span class="dot">5</span><span>HIPAA Signature Method</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="insured-continued">
-          <span class="dot">6</span><span>Proposed Insured Cont’d</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="history">
-          <span class="dot">7</span><span>Insurance History</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="plan">
-          <span class="dot">8</span><span>Plan Information</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="pre-approval">
-          <span class="dot">9</span><span>Pre‑Approval Information</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="underwriting">
-          <span class="dot">10</span><span>Underwriting</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="beneficiaries">
-          <span class="dot">11</span><span>Beneficiaries</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="premium">
-          <span class="dot">12</span><span>Premium Summary</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="billing">
-          <span class="dot">13</span><span>Automatic Bill Pay</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="validate-lock">
-          <span class="dot">14</span><span>Validate & Lock Data</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="attachments">
-          <span class="dot">15</span><span>Attachments</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="post-email">
-          <span class="dot">16</span><span>Post‑Submission Email Set‑Up</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="signature-method">
-          <span class="dot">17</span><span>Signature Method</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="producer-statement">
-          <span class="dot">18</span><span>Producer Statement</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="welcome-consent">
-          <span class="dot">19</span><span>Welcome Consent – Producer</span>
-        </li>
-        <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="apply-esign-producer">
-          <span class="dot">20</span><span>Apply eSignature – Producer</span>
-        </li>
-      </ol>
-    </aside>
+      <!-- Sidebar: Stepper Navigation -->
+      <aside id="sidebar" aria-label="Application steps">
+        <ol id="step-list" class="stepper" role="tablist" aria-orientation="vertical">
+          <li class="step is-active" role="tab" aria-selected="true" tabindex="0" data-step="producer">
+            <span class="dot">1</span><span>Producer Information</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="insured">
+            <span class="dot">2</span><span>Proposed Insured</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="confirm-id">
+            <span class="dot">3</span><span>Confirm Identity</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="hipaa-lock">
+            <span class="dot">4</span><span>HIPAA Signature & Lock</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="hipaa-method">
+            <span class="dot">5</span><span>HIPAA Signature Method</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="insured-continued">
+            <span class="dot">6</span><span>Proposed Insured Cont’d</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="history">
+            <span class="dot">7</span><span>Insurance History</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="plan">
+            <span class="dot">8</span><span>Plan Information</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="pre-approval">
+            <span class="dot">9</span><span>Pre‑Approval Information</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="underwriting">
+            <span class="dot">10</span><span>Underwriting</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="beneficiaries">
+            <span class="dot">11</span><span>Beneficiaries</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="premium">
+            <span class="dot">12</span><span>Premium Summary</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="billing">
+            <span class="dot">13</span><span>Automatic Bill Pay</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="validate-lock">
+            <span class="dot">14</span><span>Validate & Lock Data</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="attachments">
+            <span class="dot">15</span><span>Attachments</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="post-email">
+            <span class="dot">16</span><span>Post‑Submission Email Set‑Up</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="signature-method">
+            <span class="dot">17</span><span>Signature Method</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="producer-statement">
+            <span class="dot">18</span><span>Producer Statement</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="welcome-consent">
+            <span class="dot">19</span><span>Welcome Consent – Producer</span>
+          </li>
+          <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="apply-esign-producer">
+            <span class="dot">20</span><span>Apply eSignature – Producer</span>
+          </li>
+        </ol>
+      </aside>
 
-    <!-- Main Wizard -->
-    <main id="main" role="main">
-      <form id="wizard" novalidate>
-        <!-- Case Header -->
-        <div class="case-header">
-          <div class="case-breadcrumb">
-            <span id="case-client">Client: —</span>
-            <span class="sep">•</span>
-            <span id="case-product">Product: —</span>
-          </div>
-          <div class="case-actions">
-            <button type="button" class="btn btn--ghost" id="btn-case-notes">Case Notes</button>
-            <button type="button" class="btn btn--ghost" id="btn-view-forms">View Forms</button>
-            <div class="menu">
-              <button type="button" class="btn btn--ghost" id="btn-case-actions">Case Actions ▾</button>
-              <div id="case-actions-menu" class="menu__items" role="menu" hidden>
-                <button type="button" role="menuitem" data-action="duplicate">Duplicate Case</button>
-                <button type="button" role="menuitem" data-action="delete">Delete Case</button>
-                <button type="button" role="menuitem" data-action="export">Export PDF</button>
-              </div>
+      <!-- Main Wizard -->
+      <main id="main" role="main">
+        <form id="wizard" novalidate>
+          <!-- Case Header -->
+          <div class="case-header">
+            <div class="case-breadcrumb">
+              <span id="case-client">Client: —</span>
+              <span class="sep">•</span>
+              <span id="case-product">Product: —</span>
             </div>
-          </div>
-        </div>
-
-        <!-- 1 Producer Information -->
-        <section class="step-view" data-step="producer">
-          <h2>Producer Information</h2>
-          <div class="grid">
-            <div class="field"><label>General Agent Name</label><input id="ga-name" placeholder="DAWGCHECK Partners" /></div>
-            <div class="field"><label>General Agent Number</label><input id="ga-number" placeholder="1186348" /></div>
-
-            <div class="field"><label>First <b class="req">*</b></label><input id="prod-first" required /></div>
-            <div class="field"><label>Middle</label><input id="prod-middle" /></div>
-            <div class="field"><label>Last <b class="req">*</b></label><input id="prod-last" required /></div>
-
-            <div class="field"><label>Date of Birth</label><input id="prod-dob" placeholder="MM/DD/YYYY" inputmode="numeric" /></div>
-            <div class="field"><label>Last 4 of SSN</label><input id="prod-ssn4" maxlength="4" inputmode="numeric" /></div>
-            <div class="field"><label>Producer ID Number</label><input id="prod-id" /></div>
-
-            <div class="field"><label>State License Number</label><input id="prod-license" /></div>
-            <div class="field"><label>Phone</label><input id="prod-phone" inputmode="tel" placeholder="(555) 555‑1234" /></div>
-            <div class="field"><label>Email</label><input id="prod-email" type="email" placeholder="name@example.com" /></div>
-
-            <div class="field span-3"><label>Street Address</label><input id="prod-addr1" /></div>
-            <div class="field"><label>City</label><input id="prod-city" /></div>
-            <div class="field"><label>State</label><select id="prod-state"></select></div>
-            <div class="field"><label>Zip Code</label><input id="prod-zip" inputmode="numeric" maxlength="10" /></div>
-            <div class="field span-3"><label>Additional Producer on this contract?</label>
-              <div class="radios">
-                <label><input type="radio" name="co-producer" value="No" checked /> No</label>
-                <label><input type="radio" name="co-producer" value="Yes" /> Yes</label>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2 Proposed Insured -->
-        <section class="step-view" data-step="insured" hidden>
-          <h2>Proposed Insured</h2>
-          <div class="grid">
-            <div class="field"><label>First Name <b class="req">*</b></label><input id="pi-first" required /></div>
-            <div class="field"><label>Middle</label><input id="pi-middle" /></div>
-            <div class="field"><label>Last Name <b class="req">*</b></label><input id="pi-last" required /></div>
-
-            <div class="field"><label>SSN <b class="req">*</b></label><input id="pi-ssn" class="mask-ssn" maxlength="11" required /></div>
-            <div class="field"><label>Date of Birth <b class="req">*</b></label><input id="pi-dob" placeholder="MM/DD/YYYY" class="mask-dob" required /></div>
-            <div class="field"><label>Age</label><input id="pi-age" readonly /></div>
-
-            <div class="field"><label>Phone <b class="req">*</b></label><input id="pi-phone" class="mask-phone" required /></div>
-            <div class="field"><label>Gender <b class="req">*</b></label>
-              <select id="pi-gender" required>
-                <option value="">Please select…</option>
-                <option>Female</option>
-                <option>Male</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="field"><label>Email</label><input id="pi-email" type="email" /></div>
-
-            <div class="field span-3"><label>Address</label><input id="pi-addr1" /></div>
-            <div class="field"><label>City</label><input id="pi-city" /></div>
-            <div class="field"><label>State</label><select id="pi-state"></select></div>
-            <div class="field"><label>Zip</label><input id="pi-zip" maxlength="10" inputmode="numeric" /></div>
-          </div>
-        </section>
-
-        <!-- 3 Confirm Identity -->
-        <section class="step-view" data-step="confirm-id" hidden>
-          <h2>Confirm Identity – Proposed Insured</h2>
-          <div class="alert info">In order to protect client personal information, verify the following.</div>
-          <div class="grid">
-            <div class="field"><label>Is Name Correct?</label>
-              <div class="radios">
-                <label><input type="radio" name="id-name-ok" value="Yes" checked /> Yes</label>
-                <label><input type="radio" name="id-name-ok" value="No" /> No</label>
-              </div>
-            </div>
-            <div class="field"><label>Is SSN Correct?</label>
-              <div class="radios">
-                <label><input type="radio" name="id-ssn-ok" value="Yes" checked /> Yes</label>
-                <label><input type="radio" name="id-ssn-ok" value="No" /> No</label>
-              </div>
-            </div>
-            <div class="field"><label>Is Date of Birth Correct?</label>
-              <div class="radios">
-                <label><input type="radio" name="id-dob-ok" value="Yes" checked /> Yes</label>
-                <label><input type="radio" name="id-dob-ok" value="No" /> No</label>
-              </div>
-            </div>
-
-            <div class="field"><label>Re-enter Date of Birth</label><input id="id-dob-confirm" class="mask-dob" placeholder="MM/DD/YYYY" /></div>
-            <div class="field"><label>Re-enter Phone</label><input id="id-phone-confirm" class="mask-phone" placeholder="(555) 555‑1234" /></div>
-          </div>
-        </section>
-
-        <!-- 4 HIPAA Signature & Lock -->
-        <section class="step-view" data-step="hipaa-lock" hidden>
-          <h2>HIPAA Signature and Lock Data</h2>
-          <div id="hipaa-lock-panel" class="panel">
-            <div class="alert success" id="hipaa-lock-msg" hidden>The data has been locked.</div>
-            <div class="alert warn" id="hipaa-unlocked-msg">Your data has not been locked yet. Lock to continue to signature.</div>
-            <div class="actions">
-              <button type="button" class="btn btn--primary" id="btn-lock-hipaa">Lock Data</button>
-              <button type="button" class="btn btn--ghost" id="btn-unlock-hipaa" hidden>Unlock Application Data and Cancel Signature Process</button>
-            </div>
-            <p class="note">This information will remain on DAWGCHECK for 10 days after no activity.</p>
-          </div>
-        </section>
-
-        <!-- 5 HIPAA Signature Method -->
-        <section class="step-view" data-step="hipaa-method" hidden>
-          <h2>HIPAA Signature Method</h2>
-          <div class="alert info">By verifying/entering the cell phone number below, an automated text will be sent with a link to complete HIPAA consent.</div>
-          <div class="grid">
-            <div class="field"><label>Signer Presence</label>
-              <div class="radios">
-                <label><input type="radio" name="hipaa-pres" value="Present" checked /> Present</label>
-                <label><input type="radio" name="hipaa-pres" value="Not Present" /> Not Present</label>
-              </div>
-            </div>
-            <div class="field"><label>Notification Method</label>
-              <div class="radios">
-                <label><input type="radio" name="hipaa-notif" value="Text" checked /> Text</label>
-                <label><input type="radio" name="hipaa-notif" value="Email" /> Email</label>
-              </div>
-            </div>
-            <div class="field"><label>Cell Phone Number</label><input id="hipaa-phone" class="mask-phone" placeholder="(555) 555‑1234" /></div>
-            <div class="field"><label>4 Digit PIN</label><input id="hipaa-pin" class="mask-4pin" placeholder="1234" maxlength="4" inputmode="numeric" /></div>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn" id="btn-hipaa-send">Send HIPAA Signature Link</button>
-            <span id="hipaa-send-status" class="muted"></span>
-          </div>
-        </section>
-
-        <!-- 6 Proposed Insured Cont'd -->
-        <section class="step-view" data-step="insured-continued" hidden>
-          <h2>Proposed Insured – Continued</h2>
-          <div class="grid">
-            <div class="field span-3"><label>Residence History (Past 5 Years)</label>
-              <textarea id="pi-res-history" rows="3" placeholder="Street, City, State, Zip — From MM/YYYY to MM/YYYY"></textarea>
-            </div>
-            <div class="field"><label>Interview Conducted In Person?</label>
-              <div class="radios">
-                <label><input type="radio" name="interview" value="Yes" /> Yes</label>
-                <label><input type="radio" name="interview" value="No" checked /> No</label>
-              </div>
-            </div>
-            <div class="field span-2"><label>If not in person, explain</label><input id="pi-interview-notes" placeholder="Virtual" /></div>
-
-            <div class="field"><label>How long have you known the Proposed Insured?</label>
-              <select id="pi-known">
-                <option>Recently met</option>
-                <option>1–2 years</option>
-                <option>3–5 years</option>
-                <option>5+ years</option>
-              </select>
-            </div>
-            <div class="field"><label>Are you the Proposed Insured or Owner?</label>
-              <div class="radios"><label><input type="radio" name="producer-is-insured" value="Yes" /> Yes</label><label><input type="radio" name="producer-is-insured" value="No" checked /> No</label></div>
-            </div>
-            <div class="field"><label>Related to the Proposed Insured or Owner?</label>
-              <div class="radios"><label><input type="radio" name="producer-related" value="Yes" /> Yes</label><label><input type="radio" name="producer-related" value="No" checked /> No</label></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 7 Insurance History -->
-        <section class="step-view" data-step="history" hidden>
-          <h2>Insurance History</h2>
-          <div class="grid">
-            <div class="field span-3">
-              <label>Authorize producer to view coverage on other policies?</label>
-              <div class="radios">
-                <label><input type="radio" name="auth-view" value="Yes" /> Yes</label>
-                <label><input type="radio" name="auth-view" value="No" checked /> No</label>
+            <div class="case-actions">
+              <button type="button" class="btn btn--ghost" id="btn-case-notes">Case Notes</button>
+              <button type="button" class="btn btn--ghost" id="btn-view-forms">View Forms</button>
+              <div class="menu">
+                <button type="button" class="btn btn--ghost" id="btn-case-actions">Case Actions ▾</button>
+                <div id="case-actions-menu" class="menu__items" role="menu" hidden>
+                  <button type="button" role="menuitem" data-action="duplicate">Duplicate Case</button>
+                  <button type="button" role="menuitem" data-action="delete">Delete Case</button>
+                  <button type="button" role="menuitem" data-action="export">Export PDF</button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="subsection">
-            <h3>Existing Policies with this Carrier</h3>
-            <table class="table">
-              <thead><tr><th>Company</th><th>Policy Number</th><th>Face Amount</th><th>In Force</th><th></th></tr></thead>
-              <tbody id="carrier-policies"></tbody>
-              <tfoot><tr><td colspan="5"><button type="button" class="btn btn--ghost" id="btn-add-carrier-policy">Add Policy</button></td></tr></tfoot>
-            </table>
-          </div>
+          <!-- 1 Producer Information -->
+          <section class="step-view" data-step="producer">
+            <h2>Producer Information</h2>
+            <div class="grid">
+              <div class="field"><label>General Agent Name</label><input id="ga-name" placeholder="DAWGCHECK Partners" /></div>
+              <div class="field"><label>General Agent Number</label><input id="ga-number" placeholder="1186348" /></div>
 
-          <div class="subsection">
-            <h3>All Other Life/Annuity Contracts</h3>
-            <table class="table">
-              <thead><tr><th>Company</th><th>Policy Number</th><th>Face Amount</th><th>Type</th><th></th></tr></thead>
-              <tbody id="other-policies"></tbody>
-              <tfoot><tr><td colspan="5"><button type="button" class="btn btn--ghost" id="btn-add-other-policy">Add Policy</button></td></tr></tfoot>
-            </table>
-          </div>
+              <div class="field"><label>First <b class="req">*</b></label><input id="prod-first" required /></div>
+              <div class="field"><label>Middle</label><input id="prod-middle" /></div>
+              <div class="field"><label>Last <b class="req">*</b></label><input id="prod-last" required /></div>
 
-          <div class="grid">
-            <div class="field"><label>Declined for life insurance in the past 10 years?</label>
-              <div class="radios"><label><input type="radio" name="declined10" value="Yes" /> Yes</label><label><input type="radio" name="declined10" value="No" checked /> No</label></div>
-            </div>
-            <div class="field"><label>Offered cash or other consideration for obtaining policy?</label>
-              <div class="radios"><label><input type="radio" name="stranger" value="Yes" /> Yes</label><label><input type="radio" name="stranger" value="No" checked /> No</label></div>
-            </div>
-            <div class="field"><label>Finance arrangement to pay premiums?</label>
-              <div class="radios"><label><input type="radio" name="finance" value="Yes" /> Yes</label><label><input type="radio" name="finance" value="No" checked /> No</label></div>
-            </div>
-          </div>
-        </section>
+              <div class="field"><label>Date of Birth</label><input id="prod-dob" placeholder="MM/DD/YYYY" inputmode="numeric" /></div>
+              <div class="field"><label>Last 4 of SSN</label><input id="prod-ssn4" maxlength="4" inputmode="numeric" /></div>
+              <div class="field"><label>Producer ID Number</label><input id="prod-id" /></div>
 
-        <!-- 8 Plan Information -->
-        <section class="step-view" data-step="plan" hidden>
-          <h2>Plan Information</h2>
-          <div class="grid">
-            <div class="field span-2"><label>Plan</label>
-              <select id="plan-select">
-                <option>Indexed Universal Life Express with Easy Solve</option>
-                <option>Term Life Answers – Full Application</option>
-                <option>Term Life Answers – Speed eTicket</option>
-                <option>Term Life Express Point of Sale Decision</option>
-                <option>Living Promise Level</option>
-                <option>Living Promise Graded</option>
-              </select>
-            </div>
-            <div class="field"><label>Max Coverage Allowed (based on existing)</label><input id="max-coverage" value="$230,000" readonly /></div>
-            <div class="field"><label>Amount of Insurance Applied For <b class="req">*</b></label><input id="face-amount" class="mask-money" placeholder="$200,000" required /></div>
-          </div>
-        </section>
+              <div class="field"><label>State License Number</label><input id="prod-license" /></div>
+              <div class="field"><label>Phone</label><input id="prod-phone" inputmode="tel" placeholder="(555) 555‑1234" /></div>
+              <div class="field"><label>Email</label><input id="prod-email" type="email" placeholder="name@example.com" /></div>
 
-        <!-- 9 Pre-Approval Information -->
-        <section class="step-view" data-step="pre-approval" hidden>
-          <h2>Pre‑Approval Information</h2>
-          <div class="grid">
-            <div class="field"><label>State</label><select id="pre-state"></select></div>
-            <div class="field"><label>Product Type</label>
-              <select id="pre-product-type">
-                <option>Accidental Death</option>
-                <option>Term Life</option>
-                <option>Whole Life</option>
-                <option>Universal Life</option>
-                <option>Indexed Universal Life</option>
-              </select>
-            </div>
-            <div class="field"><label>Find Available Products</label>
-              <button type="button" class="btn" id="btn-find-products">Find</button>
-            </div>
-            <div class="field span-3">
-              <label>Products</label>
-              <select id="pre-products" size="5"></select>
-            </div>
-          </div>
-        </section>
-
-        <!-- 10 Underwriting -->
-        <section class="step-view" data-step="underwriting" hidden>
-          <h2>Underwriting</h2>
-          <div class="alert success" id="uw-success" hidden>Thank you for completing the Health Assessment. Your responses have been submitted.</div>
-          <div class="grid">
-            <div class="field span-3"><label>Health Assessment</label>
-              <button type="button" class="btn" id="btn-health-assessment">Launch Assessment</button>
-              <span id="health-status" class="muted"></span>
-            </div>
-          </div>
-        </section>
-
-        <!-- 11 Beneficiaries -->
-        <section class="step-view" data-step="beneficiaries" hidden>
-          <h2>Beneficiaries</h2>
-          <table class="table">
-            <thead><tr><th>Name</th><th>Relationship</th><th>Type</th><th>% Share</th><th></th></tr></thead>
-            <tbody id="bene-body"></tbody>
-            <tfoot><tr><td colspan="3"></td><td id="bene-total">Total: 0%</td><td></td></tr></tfoot>
-          </table>
-          <div class="actions"><button type="button" class="btn btn--ghost" id="btn-add-bene">Add Beneficiary</button></div>
-        </section>
-
-        <!-- 12 Premium Summary -->
-        <section class="step-view" data-step="premium" hidden>
-          <h2>Premium Summary</h2>
-          <div class="grid">
-            <div class="field"><label>Issue State</label><input id="summary-state" readonly /></div>
-            <div class="field"><label>Age</label><input id="summary-age" readonly /></div>
-            <div class="field"><label>Gender</label><input id="summary-gender" readonly /></div>
-            <div class="field span-3"><label>Plan</label><input id="summary-plan" readonly /></div>
-
-            <div class="field"><label>Face Amount</label><input id="summary-face" readonly /></div>
-            <div class="field"><label>Tobacco Status</label>
-              <select id="summary-tobacco"><option>Nontobacco</option><option>Tobacco</option></select>
-            </div>
-            <div class="field"><label>Billing Mode</label>
-              <select id="summary-mode">
-                <option>Monthly Automatic Bill Pay</option>
-                <option>Direct Bill Quarterly</option>
-                <option>Direct Bill Semi‑Annual</option>
-                <option>Annual</option>
-              </select>
-            </div>
-
-            <div class="field span-3"><button type="button" class="btn" id="btn-calc-premium">Calculate Modal Premium</button></div>
-            <div class="field span-3"><label>Calculated Premiums</label>
-              <div id="premium-table" class="prem-grid">
-                <div><b>Annual</b><span id="prem-annual">$0.00</span></div>
-                <div><b>Semi‑Annual</b><span id="prem-semi">$0.00</span></div>
-                <div><b>Quarterly</b><span id="prem-quarter">$0.00</span></div>
-                <div><b>Monthly</b><span id="prem-month">$0.00</span></div>
+              <div class="field span-3"><label>Street Address</label><input id="prod-addr1" /></div>
+              <div class="field"><label>City</label><input id="prod-city" /></div>
+              <div class="field"><label>State</label><select id="prod-state"></select></div>
+              <div class="field"><label>Zip Code</label><input id="prod-zip" inputmode="numeric" maxlength="10" /></div>
+              <div class="field span-3"><label>Additional Producer on this contract?</label>
+                <div class="radios">
+                  <label><input type="radio" name="co-producer" value="No" checked /> No</label>
+                  <label><input type="radio" name="co-producer" value="Yes" /> Yes</label>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- 13 Automatic Bill Pay -->
-        <section class="step-view" data-step="billing" hidden>
-          <h2>Automatic Bill Pay</h2>
-          <div class="grid">
-            <div class="field"><label>Who will be the payor?</label><input id="bill-payor" placeholder="Valerie brimfield" /></div>
-            <div class="field"><label>Account Holder SSN</label><input id="bill-ssn" class="mask-ssn" maxlength="11" /></div>
-            <div class="field"><label>Type of Account</label><select id="acct-type"><option>Checking</option><option>Savings</option></select></div>
+          <!-- 2 Proposed Insured -->
+          <section class="step-view" data-step="insured" hidden>
+            <h2>Proposed Insured</h2>
+            <div class="grid">
+              <div class="field"><label>First Name <b class="req">*</b></label><input id="pi-first" required /></div>
+              <div class="field"><label>Middle</label><input id="pi-middle" /></div>
+              <div class="field"><label>Last Name <b class="req">*</b></label><input id="pi-last" required /></div>
 
-            <div class="field"><label>Name(s) on Account</label><input id="acct-name" /></div>
-            <div class="field"><label>Routing Number</label><input id="acct-routing" class="mask-routing" maxlength="9" /></div>
-            <div class="field"><label>Account Number</label><input id="acct-number" class="mask-account" maxlength="17" /></div>
+              <div class="field"><label>SSN <b class="req">*</b></label><input id="pi-ssn" class="mask-ssn" maxlength="11" required /></div>
+              <div class="field"><label>Date of Birth <b class="req">*</b></label><input id="pi-dob" placeholder="MM/DD/YYYY" class="mask-dob" required /></div>
+              <div class="field"><label>Age</label><input id="pi-age" readonly /></div>
 
-            <div class="field span-2"><label>Financial Institution</label><input id="acct-bank" placeholder="Your Federal Credit Union" /></div>
-          </div>
-        </section>
-
-        <!-- 14 Validate & Lock Data -->
-        <section class="step-view" data-step="validate-lock" hidden>
-          <h2>Validate and Lock Data</h2>
-          <div class="alert success" id="lock-status" hidden>The application has been locked!</div>
-          <div class="alert info" id="lock-instructions">Your application has been digitally locked to protect client data during the signature process.</div>
-          <div class="actions">
-            <button type="button" class="btn btn--primary" id="btn-lock-app">Lock</button>
-            <button type="button" class="btn btn--ghost" id="btn-unlock-app" hidden>Unlock Application Data and Cancel Signature Process</button>
-          </div>
-        </section>
-
-        <!-- 15 Attachments -->
-        <section class="step-view" data-step="attachments" hidden>
-          <h2>Attachments</h2>
-          <div class="uploader">
-            <input type="file" id="attach-input" multiple />
-            <button type="button" class="btn" id="btn-upload">Upload</button>
-          </div>
-          <ul id="attach-list" class="files"></ul>
-        </section>
-
-        <!-- 16 Post-Submission Email Set-Up -->
-        <section class="step-view" data-step="post-email" hidden>
-          <h2>Post‑Submission Email Set‑Up</h2>
-          <div class="grid">
-            <div class="field span-3"><label>Recipients (comma-separated)</label><input id="email-recipients" placeholder="client@example.com, producer@example.com" /></div>
-            <div class="field span-3"><label>Message</label><textarea id="email-message" rows="4" placeholder="Thank you for your application…"></textarea></div>
-          </div>
-        </section>
-
-        <!-- 17 Signature Method -->
-        <section class="step-view" data-step="signature-method" hidden>
-          <h2>Signature Method</h2>
-          <div class="alert info">This application is currently awaiting consumer signatures.</div>
-          <div class="grid">
-            <div class="field"><label>Collect Signatures</label>
-              <div class="radios">
-                <label><input type="radio" name="sig-method" value="electronic" checked /> Collect all client signatures electronically</label>
-                <label><input type="radio" name="sig-method" value="print" /> Print application for client wet signature</label>
+              <div class="field"><label>Phone <b class="req">*</b></label><input id="pi-phone" class="mask-phone" required /></div>
+              <div class="field"><label>Gender <b class="req">*</b></label>
+                <select id="pi-gender" required>
+                  <option value="">Please select…</option>
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Other</option>
+                </select>
               </div>
-            </div>
-            <div class="field"><label>Signer Presence</label>
-              <div class="radios">
-                <label><input type="radio" name="sig-pres" value="Present" /> Present</label>
-                <label><input type="radio" name="sig-pres" value="Not Present" checked /> Not Present</label>
-              </div>
-            </div>
-            <div class="field"><label>Notification Method</label>
-              <div class="radios">
-                <label><input type="radio" name="sig-notif" value="Text" checked /> Text</label>
-                <label><input type="radio" name="sig-notif" value="Email" /> Email</label>
-              </div>
-            </div>
-            <div class="field"><label>Cell Phone Number</label><input id="sig-phone" class="mask-phone" /></div>
-            <div class="field"><label>4 Digit PIN</label><input id="sig-pin" class="mask-4pin" maxlength="4" placeholder="1234" /></div>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn" id="btn-send-sign">Send Signature Links</button>
-            <span id="sig-send-status" class="muted"></span>
-          </div>
-        </section>
+              <div class="field"><label>Email</label><input id="pi-email" type="email" /></div>
 
-        <!-- 18 Producer Statement -->
-        <section class="step-view" data-step="producer-statement" hidden>
-          <h2>Producer Statement</h2>
-          <div class="grid">
-            <div class="field span-3"><label>Statement</label>
-              <textarea id="producer-statement" rows="6" placeholder="I certify that I witnessed all signatures and verified identity to the best of my knowledge…"></textarea>
+              <div class="field span-3"><label>Address</label><input id="pi-addr1" /></div>
+              <div class="field"><label>City</label><input id="pi-city" /></div>
+              <div class="field"><label>State</label><select id="pi-state"></select></div>
+              <div class="field"><label>Zip</label><input id="pi-zip" maxlength="10" inputmode="numeric" /></div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- 19 Welcome Consent – Producer -->
-        <section class="step-view" data-step="welcome-consent" hidden>
-          <h2>Welcome Consent – Producer</h2>
-          <div class="grid">
-            <div class="field span-3">
-              <label><input type="checkbox" id="welcome-consent-check" /> I acknowledge and consent to the electronic signature process.</label>
-            </div>
-          </div>
-        </section>
-
-        <!-- 20 Apply eSignature – Producer -->
-        <section class="step-view" data-step="apply-esign-producer" hidden>
-          <h2>Apply eSignature – Producer</h2>
-          <div class="grid">
-            <div class="field"><label>Signed in State</label><select id="signed-state"></select></div>
-            <div class="field"><label>Use touch signature?</label>
-              <div class="radios">
-                <label><input type="radio" name="finger" value="Yes" checked /> Yes</label>
-                <label><input type="radio" name="finger" value="No" /> No</label>
+          <!-- 3 Confirm Identity -->
+          <section class="step-view" data-step="confirm-id" hidden>
+            <h2>Confirm Identity – Proposed Insured</h2>
+            <div class="alert info">In order to protect client personal information, verify the following.</div>
+            <div class="grid">
+              <div class="field"><label>Is Name Correct?</label>
+                <div class="radios">
+                  <label><input type="radio" name="id-name-ok" value="Yes" checked /> Yes</label>
+                  <label><input type="radio" name="id-name-ok" value="No" /> No</label>
+                </div>
               </div>
+              <div class="field"><label>Is SSN Correct?</label>
+                <div class="radios">
+                  <label><input type="radio" name="id-ssn-ok" value="Yes" checked /> Yes</label>
+                  <label><input type="radio" name="id-ssn-ok" value="No" /> No</label>
+                </div>
+              </div>
+              <div class="field"><label>Is Date of Birth Correct?</label>
+                <div class="radios">
+                  <label><input type="radio" name="id-dob-ok" value="Yes" checked /> Yes</label>
+                  <label><input type="radio" name="id-dob-ok" value="No" /> No</label>
+                </div>
+              </div>
+
+              <div class="field"><label>Re-enter Date of Birth</label><input id="id-dob-confirm" class="mask-dob" placeholder="MM/DD/YYYY" /></div>
+              <div class="field"><label>Re-enter Phone</label><input id="id-phone-confirm" class="mask-phone" placeholder="(555) 555‑1234" /></div>
             </div>
-            <div class="field span-3">
+          </section>
+
+          <!-- 4 HIPAA Signature & Lock -->
+          <section class="step-view" data-step="hipaa-lock" hidden>
+            <h2>HIPAA Signature and Lock Data</h2>
+            <div id="hipaa-lock-panel" class="panel">
+              <div class="alert success" id="hipaa-lock-msg" hidden>The data has been locked.</div>
+              <div class="alert warn" id="hipaa-unlocked-msg">Your data has not been locked yet. Lock to continue to signature.</div>
               <div class="actions">
-                <button type="button" class="btn" id="btn-apply-esign">Apply eSignature</button>
-                <button type="button" class="btn btn--ghost" id="btn-print-app">Print Signed Application</button>
-                <button type="button" class="btn btn--primary" id="btn-submit-app">Submit Application</button>
+                <button type="button" class="btn btn--primary" id="btn-lock-hipaa">Lock Data</button>
+                <button type="button" class="btn btn--ghost" id="btn-unlock-hipaa" hidden>Unlock Application Data and Cancel Signature Process</button>
+              </div>
+              <p class="note">This information will remain on DAWGCHECK for 10 days after no activity.</p>
+            </div>
+          </section>
+
+          <!-- 5 HIPAA Signature Method -->
+          <section class="step-view" data-step="hipaa-method" hidden>
+            <h2>HIPAA Signature Method</h2>
+            <div class="alert info">By verifying/entering the cell phone number below, an automated text will be sent with a link to complete HIPAA consent.</div>
+            <div class="grid">
+              <div class="field"><label>Signer Presence</label>
+                <div class="radios">
+                  <label><input type="radio" name="hipaa-pres" value="Present" checked /> Present</label>
+                  <label><input type="radio" name="hipaa-pres" value="Not Present" /> Not Present</label>
+                </div>
+              </div>
+              <div class="field"><label>Notification Method</label>
+                <div class="radios">
+                  <label><input type="radio" name="hipaa-notif" value="Text" checked /> Text</label>
+                  <label><input type="radio" name="hipaa-notif" value="Email" /> Email</label>
+                </div>
+              </div>
+              <div class="field"><label>Cell Phone Number</label><input id="hipaa-phone" class="mask-phone" placeholder="(555) 555‑1234" /></div>
+              <div class="field"><label>4 Digit PIN</label><input id="hipaa-pin" class="mask-4pin" placeholder="1234" maxlength="4" inputmode="numeric" /></div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn" id="btn-hipaa-send">Send HIPAA Signature Link</button>
+              <span id="hipaa-send-status" class="muted"></span>
+            </div>
+          </section>
+
+          <!-- 6 Proposed Insured Cont'd -->
+          <section class="step-view" data-step="insured-continued" hidden>
+            <h2>Proposed Insured – Continued</h2>
+            <div class="grid">
+              <div class="field span-3"><label>Residence History (Past 5 Years)</label>
+                <textarea id="pi-res-history" rows="3" placeholder="Street, City, State, Zip — From MM/YYYY to MM/YYYY"></textarea>
+              </div>
+              <div class="field"><label>Interview Conducted In Person?</label>
+                <div class="radios">
+                  <label><input type="radio" name="interview" value="Yes" /> Yes</label>
+                  <label><input type="radio" name="interview" value="No" checked /> No</label>
+                </div>
+              </div>
+              <div class="field span-2"><label>If not in person, explain</label><input id="pi-interview-notes" placeholder="Virtual" /></div>
+
+              <div class="field"><label>How long have you known the Proposed Insured?</label>
+                <select id="pi-known">
+                  <option>Recently met</option>
+                  <option>1–2 years</option>
+                  <option>3–5 years</option>
+                  <option>5+ years</option>
+                </select>
+              </div>
+              <div class="field"><label>Are you the Proposed Insured or Owner?</label>
+                <div class="radios"><label><input type="radio" name="producer-is-insured" value="Yes" /> Yes</label><label><input type="radio" name="producer-is-insured" value="No" checked /> No</label></div>
+              </div>
+              <div class="field"><label>Related to the Proposed Insured or Owner?</label>
+                <div class="radios"><label><input type="radio" name="producer-related" value="Yes" /> Yes</label><label><input type="radio" name="producer-related" value="No" checked /> No</label></div>
               </div>
             </div>
-            <div class="field span-3">
-              <div id="submit-messages" class="stack"></div>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- Footer Navigation -->
-        <div class="nav-footer">
-          <button type="button" class="btn btn--ghost" id="btn-back" disabled>Back</button>
-          <div class="spacer"></div>
-          <button type="button" class="btn btn--primary" id="btn-next">Next ▸</button>
-        </div>
-      </form>
-    </main>
+          <!-- 7 Insurance History -->
+          <section class="step-view" data-step="history" hidden>
+            <h2>Insurance History</h2>
+            <div class="grid">
+              <div class="field span-3">
+                <label>Authorize producer to view coverage on other policies?</label>
+                <div class="radios">
+                  <label><input type="radio" name="auth-view" value="Yes" /> Yes</label>
+                  <label><input type="radio" name="auth-view" value="No" checked /> No</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <h3>Existing Policies with this Carrier</h3>
+              <table class="table">
+                <thead><tr><th>Company</th><th>Policy Number</th><th>Face Amount</th><th>In Force</th><th></th></tr></thead>
+                <tbody id="carrier-policies"></tbody>
+                <tfoot><tr><td colspan="5"><button type="button" class="btn btn--ghost" id="btn-add-carrier-policy">Add Policy</button></td></tr></tfoot>
+              </table>
+            </div>
+
+            <div class="subsection">
+              <h3>All Other Life/Annuity Contracts</h3>
+              <table class="table">
+                <thead><tr><th>Company</th><th>Policy Number</th><th>Face Amount</th><th>Type</th><th></th></tr></thead>
+                <tbody id="other-policies"></tbody>
+                <tfoot><tr><td colspan="5"><button type="button" class="btn btn--ghost" id="btn-add-other-policy">Add Policy</button></td></tr></tfoot>
+              </table>
+            </div>
+
+            <div class="grid">
+              <div class="field"><label>Declined for life insurance in the past 10 years?</label>
+                <div class="radios"><label><input type="radio" name="declined10" value="Yes" /> Yes</label><label><input type="radio" name="declined10" value="No" checked /> No</label></div>
+              </div>
+              <div class="field"><label>Offered cash or other consideration for obtaining policy?</label>
+                <div class="radios"><label><input type="radio" name="stranger" value="Yes" /> Yes</label><label><input type="radio" name="stranger" value="No" checked /> No</label></div>
+              </div>
+              <div class="field"><label>Finance arrangement to pay premiums?</label>
+                <div class="radios"><label><input type="radio" name="finance" value="Yes" /> Yes</label><label><input type="radio" name="finance" value="No" checked /> No</label></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 8 Plan Information -->
+          <section class="step-view" data-step="plan" hidden>
+            <h2>Plan Information</h2>
+            <div class="grid">
+              <div class="field span-2"><label>Plan</label>
+                <select id="plan-select">
+                  <option>Indexed Universal Life Express with Easy Solve</option>
+                  <option>Term Life Answers – Full Application</option>
+                  <option>Term Life Answers – Speed eTicket</option>
+                  <option>Term Life Express Point of Sale Decision</option>
+                  <option>Living Promise Level</option>
+                  <option>Living Promise Graded</option>
+                </select>
+              </div>
+              <div class="field"><label>Max Coverage Allowed (based on existing)</label><input id="max-coverage" value="$230,000" readonly /></div>
+              <div class="field"><label>Amount of Insurance Applied For <b class="req">*</b></label><input id="face-amount" class="mask-money" placeholder="$200,000" required /></div>
+            </div>
+          </section>
+
+          <!-- 9 Pre-Approval Information -->
+          <section class="step-view" data-step="pre-approval" hidden>
+            <h2>Pre‑Approval Information</h2>
+            <div class="grid">
+              <div class="field"><label>State</label><select id="pre-state"></select></div>
+              <div class="field"><label>Product Type</label>
+                <select id="pre-product-type">
+                  <option>Accidental Death</option>
+                  <option>Term Life</option>
+                  <option>Whole Life</option>
+                  <option>Universal Life</option>
+                  <option>Indexed Universal Life</option>
+                </select>
+              </div>
+              <div class="field"><label>Find Available Products</label>
+                <button type="button" class="btn" id="btn-find-products">Find</button>
+              </div>
+              <div class="field span-3">
+                <label>Products</label>
+                <select id="pre-products" size="5"></select>
+              </div>
+            </div>
+          </section>
+
+          <!-- 10 Underwriting -->
+          <section class="step-view" data-step="underwriting" hidden>
+            <h2>Underwriting</h2>
+            <div class="alert success" id="uw-success" hidden>Thank you for completing the Health Assessment. Your responses have been submitted.</div>
+            <div class="grid">
+              <div class="field span-3"><label>Health Assessment</label>
+                <button type="button" class="btn" id="btn-health-assessment">Launch Assessment</button>
+                <span id="health-status" class="muted"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 11 Beneficiaries -->
+          <section class="step-view" data-step="beneficiaries" hidden>
+            <h2>Beneficiaries</h2>
+            <table class="table">
+              <thead><tr><th>Name</th><th>Relationship</th><th>Type</th><th>% Share</th><th></th></tr></thead>
+              <tbody id="bene-body"></tbody>
+              <tfoot><tr><td colspan="3"></td><td id="bene-total">Total: 0%</td><td></td></tr></tfoot>
+            </table>
+            <div class="actions"><button type="button" class="btn btn--ghost" id="btn-add-bene">Add Beneficiary</button></div>
+          </section>
+
+          <!-- 12 Premium Summary -->
+          <section class="step-view" data-step="premium" hidden>
+            <h2>Premium Summary</h2>
+            <div class="grid">
+              <div class="field"><label>Issue State</label><input id="summary-state" readonly /></div>
+              <div class="field"><label>Age</label><input id="summary-age" readonly /></div>
+              <div class="field"><label>Gender</label><input id="summary-gender" readonly /></div>
+              <div class="field span-3"><label>Plan</label><input id="summary-plan" readonly /></div>
+
+              <div class="field"><label>Face Amount</label><input id="summary-face" readonly /></div>
+              <div class="field"><label>Tobacco Status</label>
+                <select id="summary-tobacco"><option>Nontobacco</option><option>Tobacco</option></select>
+              </div>
+              <div class="field"><label>Billing Mode</label>
+                <select id="summary-mode">
+                  <option>Monthly Automatic Bill Pay</option>
+                  <option>Direct Bill Quarterly</option>
+                  <option>Direct Bill Semi‑Annual</option>
+                  <option>Annual</option>
+                </select>
+              </div>
+
+              <div class="field span-3"><button type="button" class="btn" id="btn-calc-premium">Calculate Modal Premium</button></div>
+              <div class="field span-3"><label>Calculated Premiums</label>
+                <div id="premium-table" class="prem-grid">
+                  <div><b>Annual</b><span id="prem-annual">$0.00</span></div>
+                  <div><b>Semi‑Annual</b><span id="prem-semi">$0.00</span></div>
+                  <div><b>Quarterly</b><span id="prem-quarter">$0.00</span></div>
+                  <div><b>Monthly</b><span id="prem-month">$0.00</span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 13 Automatic Bill Pay -->
+          <section class="step-view" data-step="billing" hidden>
+            <h2>Automatic Bill Pay</h2>
+            <div class="grid">
+              <div class="field"><label>Who will be the payor?</label><input id="bill-payor" placeholder="Valerie brimfield" /></div>
+              <div class="field"><label>Account Holder SSN</label><input id="bill-ssn" class="mask-ssn" maxlength="11" /></div>
+              <div class="field"><label>Type of Account</label><select id="acct-type"><option>Checking</option><option>Savings</option></select></div>
+
+              <div class="field"><label>Name(s) on Account</label><input id="acct-name" /></div>
+              <div class="field"><label>Routing Number</label><input id="acct-routing" class="mask-routing" maxlength="9" /></div>
+              <div class="field"><label>Account Number</label><input id="acct-number" class="mask-account" maxlength="17" /></div>
+
+              <div class="field span-2"><label>Financial Institution</label><input id="acct-bank" placeholder="Your Federal Credit Union" /></div>
+            </div>
+          </section>
+
+          <!-- 14 Validate & Lock Data -->
+          <section class="step-view" data-step="validate-lock" hidden>
+            <h2>Validate and Lock Data</h2>
+            <div class="alert success" id="lock-status" hidden>The application has been locked!</div>
+            <div class="alert info" id="lock-instructions">Your application has been digitally locked to protect client data during the signature process.</div>
+            <div class="actions">
+              <button type="button" class="btn btn--primary" id="btn-lock-app">Lock</button>
+              <button type="button" class="btn btn--ghost" id="btn-unlock-app" hidden>Unlock Application Data and Cancel Signature Process</button>
+            </div>
+          </section>
+
+          <!-- 15 Attachments -->
+          <section class="step-view" data-step="attachments" hidden>
+            <h2>Attachments</h2>
+            <div class="uploader">
+              <input type="file" id="attach-input" multiple />
+              <button type="button" class="btn" id="btn-upload">Upload</button>
+            </div>
+            <ul id="attach-list" class="files"></ul>
+          </section>
+
+          <!-- 16 Post-Submission Email Set-Up -->
+          <section class="step-view" data-step="post-email" hidden>
+            <h2>Post‑Submission Email Set‑Up</h2>
+            <div class="grid">
+              <div class="field span-3"><label>Recipients (comma-separated)</label><input id="email-recipients" placeholder="client@example.com, producer@example.com" /></div>
+              <div class="field span-3"><label>Message</label><textarea id="email-message" rows="4" placeholder="Thank you for your application…"></textarea></div>
+            </div>
+          </section>
+
+          <!-- 17 Signature Method -->
+          <section class="step-view" data-step="signature-method" hidden>
+            <h2>Signature Method</h2>
+            <div class="alert info">This application is currently awaiting consumer signatures.</div>
+            <div class="grid">
+              <div class="field"><label>Collect Signatures</label>
+                <div class="radios">
+                  <label><input type="radio" name="sig-method" value="electronic" checked /> Collect all client signatures electronically</label>
+                  <label><input type="radio" name="sig-method" value="print" /> Print application for client wet signature</label>
+                </div>
+              </div>
+              <div class="field"><label>Signer Presence</label>
+                <div class="radios">
+                  <label><input type="radio" name="sig-pres" value="Present" /> Present</label>
+                  <label><input type="radio" name="sig-pres" value="Not Present" checked /> Not Present</label>
+                </div>
+              </div>
+              <div class="field"><label>Notification Method</label>
+                <div class="radios">
+                  <label><input type="radio" name="sig-notif" value="Text" checked /> Text</label>
+                  <label><input type="radio" name="sig-notif" value="Email" /> Email</label>
+                </div>
+              </div>
+              <div class="field"><label>Cell Phone Number</label><input id="sig-phone" class="mask-phone" /></div>
+              <div class="field"><label>4 Digit PIN</label><input id="sig-pin" class="mask-4pin" maxlength="4" placeholder="1234" /></div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn" id="btn-send-sign">Send Signature Links</button>
+              <span id="sig-send-status" class="muted"></span>
+            </div>
+          </section>
+
+          <!-- 18 Producer Statement -->
+          <section class="step-view" data-step="producer-statement" hidden>
+            <h2>Producer Statement</h2>
+            <div class="grid">
+              <div class="field span-3"><label>Statement</label>
+                <textarea id="producer-statement" rows="6" placeholder="I certify that I witnessed all signatures and verified identity to the best of my knowledge…"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- 19 Welcome Consent – Producer -->
+          <section class="step-view" data-step="welcome-consent" hidden>
+            <h2>Welcome Consent – Producer</h2>
+            <div class="grid">
+              <div class="field span-3">
+                <label><input type="checkbox" id="welcome-consent-check" /> I acknowledge and consent to the electronic signature process.</label>
+              </div>
+            </div>
+          </section>
+
+          <!-- 20 Apply eSignature – Producer -->
+          <section class="step-view" data-step="apply-esign-producer" hidden>
+            <h2>Apply eSignature – Producer</h2>
+            <div class="grid">
+              <div class="field"><label>Signed in State</label><select id="signed-state"></select></div>
+              <div class="field"><label>Use touch signature?</label>
+                <div class="radios">
+                  <label><input type="radio" name="finger" value="Yes" checked /> Yes</label>
+                  <label><input type="radio" name="finger" value="No" /> No</label>
+                </div>
+              </div>
+              <div class="field span-3">
+                <div class="actions">
+                  <button type="button" class="btn" id="btn-apply-esign">Apply eSignature</button>
+                  <button type="button" class="btn btn--ghost" id="btn-print-app">Print Signed Application</button>
+                  <button type="button" class="btn btn--primary" id="btn-submit-app">Submit Application</button>
+                </div>
+              </div>
+              <div class="field span-3">
+                <div id="submit-messages" class="stack"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer Navigation -->
+          <div class="nav-footer">
+            <button type="button" class="btn btn--ghost" id="btn-back" disabled>Back</button>
+            <div class="spacer"></div>
+            <button type="button" class="btn btn--primary" id="btn-next">Next ▸</button>
+          </div>
+        </form>
+      </main>
     </div>
   </div>
 
   <footer class="footer">© <span id="year"></span> DAWGCHECK Training Simulator</footer>
 
-  <script src="Nijnu.js"></script>
+  <!-- IMPORTANT: load the correct JS file -->
+  <script src="app.js?v=2025.08.24.2"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').catch(()=>{});
