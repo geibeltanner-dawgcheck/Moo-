@@ -24,11 +24,22 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
       const prodFirst = $('#prod-first');
       const prodLast = $('#prod-last');
       const gaName = $('#ga-name');
+      const gaNumber = $('#ga-number');
+      const prodEmail = $('#prod-email');
       
       if (prodFirst && first) prodFirst.value = first;
       if (prodLast && last) prodLast.value = last;
       if (gaName && (first || last)) {
         gaName.value = `DAWGCHECK Partners - ${name}`;
+      }
+      // Auto-fill General Agent Number with default
+      if (gaNumber && !gaNumber.value) {
+        gaNumber.value = '1186348';
+      }
+      // Auto-fill email with a formatted suggestion
+      if (prodEmail && !prodEmail.value && first && last) {
+        const emailSuggestion = `${first.toLowerCase()}.${last.toLowerCase()}@dawgcheck.com`;
+        prodEmail.value = emailSuggestion;
       }
     }
     
@@ -199,16 +210,26 @@ function updateCaseHeader(){
 document.addEventListener('input', (e)=>{
   if (['pi-first','pi-last','plan-select','pi-state','pi-gender','face-amount'].includes(e.target.id)) updateCaseHeader();
   
-  // Auto-fill General Agent Name when producer name is entered
+  // Auto-fill General Agent Name and Email when producer name is entered
   if (['prod-first','prod-last'].includes(e.target.id)) {
     const firstName = $('#prod-first')?.value || '';
     const lastName = $('#prod-last')?.value || '';
     const gaName = $('#ga-name');
+    const prodEmail = $('#prod-email');
     
     if (gaName && (firstName.trim() || lastName.trim())) {
       const fullName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
       if (fullName) {
         gaName.value = `DAWGCHECK Partners - ${fullName}`;
+      }
+    }
+    
+    // Auto-update email suggestion if both names are present and email field is empty or has a dawgcheck.com format
+    if (prodEmail && firstName.trim() && lastName.trim()) {
+      const currentEmail = prodEmail.value.toLowerCase();
+      const isDawgcheckEmail = currentEmail.includes('@dawgcheck.com') || currentEmail === '';
+      if (isDawgcheckEmail) {
+        prodEmail.value = `${firstName.trim().toLowerCase()}.${lastName.trim().toLowerCase()}@dawgcheck.com`;
       }
     }
   }

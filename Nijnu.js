@@ -31,10 +31,16 @@ $('#btn-login')?.addEventListener('click', ()=>{
   const prodFirst = $('#prod-first');
   const prodLast = $('#prod-last');
   const gaName = $('#ga-name');
+  const gaNumber = $('#ga-number');
+  const prodEmail = $('#prod-email');
   
   if (prodFirst) prodFirst.value = fn;
   if (prodLast) prodLast.value = ln;
   if (gaName) gaName.value = `DAWGCHECK Partners - ${fn} ${ln}`;
+  if (gaNumber && !gaNumber.value) gaNumber.value = '1186348';
+  if (prodEmail && !prodEmail.value) {
+    prodEmail.value = `${fn.toLowerCase()}.${ln.toLowerCase()}@dawgcheck.com`;
+  }
   
   $('.welcome').textContent = `Welcome ${fn} ${ln}`;
   to('home');
@@ -52,10 +58,16 @@ function checkLoginStatus(){
       const prodFirst = $('#prod-first');
       const prodLast = $('#prod-last');
       const gaName = $('#ga-name');
+      const gaNumber = $('#ga-number');
+      const prodEmail = $('#prod-email');
       
       if (prodFirst) prodFirst.value = u.first;
       if (prodLast) prodLast.value = u.last;
       if (gaName) gaName.value = `DAWGCHECK Partners - ${u.first} ${u.last}`;
+      if (gaNumber && !gaNumber.value) gaNumber.value = '1186348';
+      if (prodEmail && !prodEmail.value) {
+        prodEmail.value = `${u.first.toLowerCase()}.${u.last.toLowerCase()}@dawgcheck.com`;
+      }
       
       return true;
     } 
