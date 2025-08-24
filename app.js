@@ -2,38 +2,192 @@ const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const stateKey = "dc-form";
 
-/* Router */
+/* ---- STEP TITLES (20) ---- */
+const STEP_TITLES = [
+  "Producer Information",
+  "Proposed Insured",
+  "Confirm Identity – Proposed Insured",
+  "HIPAA Signature and Lock Data",
+  "HIPAA Signature Method",
+  "Proposed Insured Cont’d",
+  "Insurance History",
+  "Plan Information",
+  "Pre-Approval Information",
+  "Underwriting",
+  "Beneficiaries",
+  "Premium Summary",
+  "Automatic Bill Pay",
+  "Validate and Lock Data",
+  "Attachments",
+  "Post Submission Email Setup",
+  "Signature Method",
+  "Producer Statement",
+  "Welcome Consent – Producer",
+  "Apply eSignature – Producer"
+];
+
+/* ---- BUILD 20 APP PAGES DYNAMICALLY (prevents missing views) ---- */
+function buildSteps(){
+  const anchor = $('#app-steps-anchor');
+  if(!anchor) return;
+  let html = '';
+  for(let i=1;i<=20;i++){
+    const title = STEP_TITLES[i-1] || `Step ${i}`;
+    const prev = i===1 ? 'start' : `app-${i-1}`;
+    const next = i===20 ? 'app-success' : `app-${i+1}`;
+
+    // minimal, working fields; we’ll expand as needed
+    const extra =
+      i===2 ? /* Proposed Insured */ `
+        <div class="field"><label>First *</label><input id="pi-first" class="input"/></div>
+        <div class="field"><label>Last *</label><input id="pi-last" class="input"/></div>
+        <div class="field"><label>Date of Birth *</label><input id="pi-dob" class="input" placeholder="MM/DD/YYYY"/></div>
+        <div class="field"><label>Age</label><input id="pi-age" class="input" readonly/></div>
+        <div class="field"><label>Gender</label>
+          <select id="pi-gender" class="select"><option value="">Select…</option><option>Male</option><option>Female</option></select>
+        </div>
+        <div class="field"><label>SSN</label><input id="pi-ssn" class="input" placeholder="___-__-____"/></div>
+      ` :
+      i===13 ? /* Auto Bill Pay */ `
+        <div class="field"><label>Bank Name</label><input id="bank-name" class="input"/></div>
+        <div class="field"><label>Routing Number</label><input id="routing" class="input" inputmode="numeric" maxlength="9"/></div>
+        <div class="field"><label>Account Number</label><input id="account" class="input" inputmode="numeric" maxlength="17"/></div>
+        <div class="field"><label>Payment Day</label><select id="weekday" class="select"><option>1</option><option>15</option><option>28</option></select></div>
+      ` :
+      i===12 ? /* Premium Summary */ `
+        <div class="field"><label>Premium (mo)</label><input id="prem-mo" class="input" inputmode="decimal"/></div>
+        <div class="field"><label>Frequency</label><select id="prem-freq" class="select"><option>Monthly</option><option>Quarterly</option><option>Semi-Annual</option><option>Annual</option></select></div>
+      ` :
+      `<div class="field"><label>Notes</label><input id="notes-${i}" class="input" placeholder="${title} notes"/></div>`;
+
+    html += `
+      <section class="view" data-view="app-${i}" hidden>
+        <header class="section-hd"><h2>${title}</h2></header>
+        <div class="form-grid">${extra}</div>
+        <div class="footer-nav">
+          <a class="btn btn--ghost" href="#/${prev}">Back</a>
+          <a class="btn btn--primary" href="#/${next}">Next ▸</a>
+        </div>
+      </section>
+    `;
+  }
+  anchor.insertAdjacentHTML('beforebegin', html);
+}
+buildSteps();
+
+/* ---- ROUTER ---- */
 function to(view){
   $$('.view').forEach(v=>{
     const active = v.dataset.view === view;
-    v.hidden = !active; v.classList.toggle('view--active', active);
+    v.hidden = !active;
+    v.classList.toggle('view--active', active);
   });
-  const app = view.startsWith('app-');
+  // tabs appearance (case vs app)
+  const app = /^app-/.test(view);
   const tabs = $$('.tabs .tab');
-  tabs[0].style.background = app ? '#cfe6f4' : '#fff';
-  tabs[0].style.borderBottom = app ? '0' : '3px solid var(--blue-800)';
-  tabs[1].style.background = app ? '#fff' : '#cfe6f4';
-  tabs[1].style.borderBottom = app ? '3px solid var(--blue-800)' : '0';
-  setStepper(view);
+  if(tabs.length===2){
+    tabs[0].style.background = app ? '#cfe6f4' : '#fff';
+    tabs[0].style.borderBottom = app ? '0' : '3px solid var(--blue-800)';
+    tabs[1].style.background = app ? '#fff' : '#cfe6f4';
+    tabs[1].style.borderBottom = app ? '3px solid var(--blue-800)' : '0';
+  }
   location.hash = `/${view}`;
-  $('#router')?.focus();
 }
 
-/* Stepper state */
-function setStepper(view){
-  const stepIdx = view==="app-proposed" ? 1 : view==="app-driver" ? 2 : view==="app-payment" ? 3 : 0;
-  $$('.stepper').forEach(s=>{
-    $$('.step', s).forEach((node, i)=>{
-      node.classList.toggle('is-active', i+1 === stepIdx);
-      node.classList.toggle('is-done', i+1 < stepIdx);
-      const dot = $('.step__dot', node);
-      if(i+1 < stepIdx) dot.textContent = '✓'; else dot.textContent = String(i+1);
-    });
+/* ---- LOGIN ---- */
+$('#btn-login')?.addEventListener('click', ()=>{
+  const fn = $('#login-first').value.trim();
+  const ln = $('#login-last').value.trim();
+  if(!fn || !ln) return alert('Enter first and last name');
+  localStorage.setItem('dc-user', JSON.stringify({first:fn,last:ln}));
+  $('.welcome span').textContent = `Welcome ${fn} ${ln}`;
+  to('home');
+});
+$('#btn-logout')?.addEventListener('click', ()=>{
+  localStorage.removeItem('dc-user');
+  to('login');
+});
+try{
+  const u = JSON.parse(localStorage.getItem('dc-user'));
+  if(u){ $('.welcome span').textContent = `Welcome ${u.first} ${u.last}`; to('home'); }
+}catch{}
+
+/* ---- DOB → AGE ---- */
+function calcAge(val){
+  const parts = val.split(/[\/\-]/);
+  if(parts.length===3){
+    const [m,d,y] = parts.map(Number);
+    const b = new Date(y, m-1, d);
+    if(!isNaN(b)){
+      const t = new Date();
+      let age = t.getFullYear()-b.getFullYear();
+      const md = t.getMonth()-b.getMonth();
+      if(md<0 || (md===0 && t.getDate()<b.getDate())) age--;
+      return age>0 ? age : '';
+    }
+  }
+  return '';
+}
+function linkDOB(dobId, ageId){
+  const dob = $('#'+dobId), age = $('#'+ageId);
+  if(!dob || !age) return;
+  const handler = e => { age.value = calcAge(e.target.value); autosave(); };
+  dob.addEventListener('input', handler);
+}
+
+/* link Start Case */
+linkDOB('dob','age');
+/* link Proposed Insured (app-2) once built */
+document.addEventListener('DOMContentLoaded', ()=>{ linkDOB('pi-dob','pi-age'); });
+
+/* ---- AUTOSAVE ---- */
+let timer;
+function autosave(){
+  clearTimeout(timer);
+  $('#save-status').textContent = 'Saving…';
+  timer = setTimeout(()=>{
+    const payload = collectForm();
+    try{
+      localStorage.setItem(stateKey, JSON.stringify(payload));
+      $('#save-status').textContent = 'Saved';
+    }catch{ $('#save-status').textContent = 'Save failed'; }
+  }, 400);
+}
+function collectForm(){
+  const data = {};
+  $$('input,select,textarea').forEach(el=>{
+    if(!el.id) return;
+    if(el.type==='checkbox'||el.type==='radio'){ data[el.id] = el.checked; }
+    else { data[el.id] = el.value; }
   });
+  return data;
 }
+function restoreForm(){
+  try{
+    const d = JSON.parse(localStorage.getItem(stateKey) || '{}');
+    Object.entries(d).forEach(([id,v])=>{
+      const el = $('#'+id);
+      if(!el) return;
+      if(el.type==='checkbox'||el.type==='radio'){ el.checked = !!v; }
+      else { el.value = v; }
+    });
+    // recompute ages if DOBs present
+    if($('#dob')) $('#age').value = calcAge($('#dob').value||'');
+    if($('#pi-dob')) $('#pi-age').value = calcAge($('#pi-dob').value||'');
+  }catch{}
+}
+restoreForm();
+document.body.addEventListener('input', autosave);
 
-/* Orientation guard */
-function wireOrientationGuard(){
+/* ---- HASH NAV ---- */
+window.addEventListener('hashchange', ()=>{
+  const target = location.hash.replace('#/','') || 'home';
+  to(target);
+});
+if(!location.hash){ to('login'); } else { to(location.hash.replace('#/','')); }
+
+/* ---- ORIENTATION GUARD ---- */
+(function(){
   const guard = $('#orientation-guard');
   const update = () => {
     const portrait = matchMedia('(orientation:portrait)').matches;
@@ -41,147 +195,7 @@ function wireOrientationGuard(){
     guard.hidden = !(portrait && narrow);
   };
   update(); addEventListener('resize', update); addEventListener('orientationchange', update);
-}
+})();
 
-/* PWA */
-function pwa(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-  }
-}
-
-/* Autosave */
-let saveTimer;
-function autosave(){
-  clearTimeout(saveTimer);
-  $('#save-status').textContent = 'Saving…';
-  saveTimer = setTimeout(()=>{
-    const payload = collectForm();
-    try{
-      localStorage.setItem(stateKey, JSON.stringify(payload));
-      $('#save-status').textContent = `Saved ${new Date().toLocaleTimeString()}`;
-    }catch{
-      $('#save-status').textContent = 'Save failed';
-    }
-  }, 500);
-}
-
-/* State helpers */
-function setVal(id, val){ const el = $('#'+id); if(el!=null) el.value = val ?? el.value; }
-function getVal(id){ const el = $('#'+id); return el?.value ?? ''; }
-function collectForm(){
-  return {
-    firstName:getVal('firstName'), lastName:getVal('lastName'), dob:getVal('dob'), age:getVal('age'), gender:getVal('gender'),
-    desc:getVal('desc'), coverage:getVal('coverage'), state:getVal('state'), ptype:getVal('ptype'),
-    pi_first:getVal('pi-first'), pi_mi:getVal('pi-mi'), pi_last:getVal('pi-last'),
-    pi_dob:getVal('pi-dob'), pi_age:getVal('pi-age'), pi_gender:getVal('pi-gender'),
-    ssn:getVal('pi-ssn'), h_ft:getVal('h-ft'), h_in:getVal('h-in'), pi_weight:getVal('pi-weight'),
-    dl: $('#dl-no')?.checked ? 'no':'yes', dl_number:getVal('dl-number'), dl_state:getVal('dl-state'),
-    birth_country:getVal('birth-country'), birth_state:getVal('birth-state'),
-    owner: $('#own-no')?.checked ? 'no':'yes',
-    bank_name:getVal('bank-name'), routing:getVal('routing'), account:getVal('account'),
-    payday: $('#pay-sched')?.checked ? 'sched':'any', weekday:getVal('weekday'), week:getVal('week'), amount:getVal('amount')
-  };
-}
-function restoreForm(){
-  try{
-    const data = JSON.parse(localStorage.getItem(stateKey) || '{}');
-
-    setVal('firstName', data.firstName);
-    setVal('lastName', data.lastName);
-    setVal('dob', data.dob);
-    setVal('age', data.age);
-    setVal('gender', data.gender);
-    setVal('desc', data.desc);
-    setVal('coverage', data.coverage);
-    setVal('state', data.state);
-    setVal('ptype', data.ptype);
-
-    setVal('pi-first', data.pi_first);
-    setVal('pi-mi', data.pi_mi);
-    setVal('pi-last', data.pi_last);
-    setVal('pi-dob', data.pi_dob);
-    setVal('pi-age', data.pi_age);
-    setVal('pi-gender', data.pi_gender);
-    setVal('pi-ssn', data.ssn);
-    setVal('h-ft', data.h_ft);
-    setVal('h-in', data.h_in);
-    setVal('pi-weight', data.pi_weight);
-
-    if(data.dl==='no') $('#dl-no').checked = true;
-    setVal('dl-number', data.dl_number);
-    setVal('dl-state', data.dl_state);
-    setVal('birth-country', data.birth_country);
-    setVal('birth-state', data.birth_state);
-    if(data.owner==='no') $('#own-no').checked = true;
-
-    setVal('bank-name', data.bank_name);
-    setVal('routing', data.routing);
-    setVal('account', data.account);
-    if(data.payday==='sched') $('#pay-sched').checked = true;
-    setVal('weekday', data.weekday);
-    setVal('week', data.week);
-    setVal('amount', data.amount);
-  }catch{}
-}
-
-/* Masks/validation */
-const onlyDigits = (v,max) => (v.replace(/\D+/g,'').slice(0,max ?? 999));
-const maskSSN = v => { const d = onlyDigits(v,9); const a=d.slice(0,3), b=d.slice(3,5), c=d.slice(5,9); return [a,b,c].filter(Boolean).join('-'); };
-const isABA = v => { const d = onlyDigits(v,9); if(d.length!==9) return false; const n=[...d].map(Number);
-  const sum = 3*(n[0]+n[3]+n[6]) + 7*(n[1]+n[4]+n[7]) + (n[2]+n[5]+n[8]); return sum % 10 === 0; };
-const maskCurrency = v => { const d = v.replace(/[^\d.]/g,''); const [i,f=''] = d.split('.'); const I = (i||'0').replace(/^0+(?=\d)/,'') || '0'; const F = (f+'00').slice(0,2); return `$${I}.${F}`; };
-function parseCurrency(v){ const d = v.replace(/[^\d]/g,''); return d ? parseInt(d,10) : 0; }
-
-/* Quote */
-function updateQuote(){
-  const age = parseInt(getVal('pi-age') || getVal('age') || '0', 10) || 0;
-  const cov = parseCurrency(getVal('coverage'));
-  const out = $('#quote-premium'); const meta = $('#quote-breakdown');
-  if(!out || !meta) return;
-  if(age<=0 || cov<=0){ out.textContent = '—'; meta.textContent = 'Enter Age & Coverage'; return; }
-  const base = 15, ageLoad = Math.max(0, age-30)*0.4, amtLoad = (cov/100000)*2.2;
-  const premium = (base + ageLoad + amtLoad).toFixed(2);
-  out.textContent = `$${premium}/mo`;
-  meta.textContent = `Base $${base.toFixed(2)} + Age $${ageLoad.toFixed(2)} + Amount $${amtLoad.toFixed(2)} for $${cov.toLocaleString()}`;
-}
-
-/* Wire inputs */
-function wireInputs(){
-  document.body.addEventListener('input', (e)=>{
-    const t = e.target;
-    if(!(t instanceof HTMLElement)) return;
-    if(t.id === 'pi-ssn'){ t.value = maskSSN(t.value); }
-    if(t.id === 'routing'){ t.value = onlyDigits(t.value,9); t.classList.toggle('error', !!t.value && !isABA(t.value)); }
-    if(t.id === 'account'){ t.value = onlyDigits(t.value,17); t.classList.toggle('error', !!t.value && (t.value.length<4 || t.value.length>17)); }
-    if(t.id === 'amount' || t.id === 'coverage'){ t.value = maskCurrency(t.value); }
-    if(t.id === 'coverage' || t.id === 'pi-age' || t.id === 'age'){ updateQuote(); }
-    autosave();
-  });
-
-  $('#btn-find-products')?.addEventListener('click', ()=>{
-    $('#product-list')?.removeAttribute('hidden');
-  });
-}
-
-/* Navigation */
-function wireNav(){
-  window.addEventListener('hashchange', ()=>{
-    const target = location.hash.replace('#/','') || 'home';
-    to(target);
-    updateQuote();
-  });
-  const initial = location.hash.replace('#/','') || 'home';
-  to(initial);
-}
-
-/* Boot */
-document.addEventListener('DOMContentLoaded', ()=>{
-  $('#year').textContent = new Date().getFullYear();
-  wireOrientationGuard();
-  pwa();
-  restoreForm();
-  wireInputs();
-  wireNav();
-  updateQuote();
-});
+/* ---- PWA ---- */
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js').catch(()=>{}); }
