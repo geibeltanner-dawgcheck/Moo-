@@ -1,160 +1,187 @@
-// Simple SPA state + nav
-const stack = [];
-function go(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (!stack.length || stack[stack.length-1]!==id) stack.push(id);
-  const tab = (id.startsWith('scr_case')||id==='scr_home'||id==='scr_welcome')?'case':'app';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
-}
-function back(){
-  stack.pop();
-  const id = stack.pop() || 'scr_home';
-  go(id);
-}
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const stateKey = "dc-form";
 
-// Global form snapshot
-const form = {
-  pi:{}, pr:{}, ci:{}, product:'', tob:'Nontobacco', face:0, max:0, mode:null
-};
-
-// Case Info → validate + product caps
-function next_caseinfo(){
-  const f = v=>document.getElementById(v).value.trim();
-  form.pi.first = f('pi_first'); form.pi.last = f('pi_last');
-  form.pi.dob   = f('pi_dob');  form.pi.age  = +f('pi_age');
-  form.pi.gender= f('pi_gender'); form.pi.state = f('pi_state');
-  form.product  = f('product');
-
-  if(!form.pi.first||!form.pi.last||!form.pi.age||!form.pi.gender||!form.pi.state||!form.product){
-    alert('Please complete Proposed Insured, State, and Product Type.'); return;
-  }
-  form.max = (form.product==='whole') ? 50000 : 300000;
-  form.tob = 'Nontobacco';
-  go('scr_producer');
-}
-
-// Plan screen guard
-function next_plan(){
-  const face = +document.getElementById('plan_face').value;
-  if(!face || face<1000){ alert('Enter a face amount.'); return; }
-  if(face>form.max){ alert('Face amount exceeds product maximum.'); return; }
-  form.face = face;
-  go('scr_pre');
-}
-
-// Beneficiaries
-function addBene(isContingent=false){
-  const tbody = document.querySelector('#bene_tbl tbody');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" placeholder="${isContingent?'Contingent Name':'Name'}"></td>
-    <td><input type="text" placeholder="Relationship"></td>
-    <td><input type="number" min="0" max="100" value="${isContingent?0:100}"></td>
-    <td><button class="danger" onclick="this.closest('tr').remove()">Delete</button></td>
-  `;
-  tbody.appendChild(tr);
-}
-
-// Modal premium (trainer math)
-function calcModal(){
-  const ageF = form.pi.age<40 ? 1 : form.pi.age<55 ? 1.2 : 1.5;
-  const prodF = form.product==='term' ? 0.35 : form.product==='iul' ? 0.85 : 1.1;
-  const tobF = (form.tob==='Nontobacco') ? 1 : 1.4;
-  const baseAnnual = (form.face/1000) * ageF * prodF * tobF * 100;
-  const modes = [
-    {label:'Direct Bill Annual', amt:baseAnnual},
-    {label:'Direct Bill Semi-Annual', amt:baseAnnual/2*1.02},
-    {label:'Direct Bill Quarterly', amt:baseAnnual/4*1.03},
-    {label:'Monthly Automatic Bill Pay', amt:baseAnnual/12*1.01},
-  ];
-  const list = document.getElementById('modeList');
-  list.innerHTML='';
-  modes.forEach(m=>{
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <label class="inline" style="justify-content:space-between">
-        <span><input type="radio" name="mode" onclick="form.mode='${m.label}'"> ${m.label}</span>
-        <b>$${m.amt.toFixed(2)}</b>
-      </label>`;
-    list.appendChild(div);
+/* Router */
+function to(view){
+  $$('.view').forEach(v=>{
+    const active = v.dataset.view === view;
+    v.hidden = !active; v.classList.toggle('view--active', active);
   });
-  document.getElementById('modes').style.display='block';
+  const app = view.startsWith('app-');
+  const tabs = $$('.tabs .tab');
+  tabs[0].style.background = app ? '#cfe6f4' : '#fff';
+  tabs[0].style.borderBottom = app ? '0' : '3px solid var(--blue-800)';
+  tabs[1].style.background = app ? '#fff' : '#cfe6f4';
+  tabs[1].style.borderBottom = app ? '3px solid var(--blue-800)' : '0';
+  setStepper(view);
+  location.hash = `/${view}`;
+  $('#router')?.focus();
 }
 
-// UW question sets (swap with exact copy later if you want)
-const UW = {
-  term: [
-    'Past 5 years any stroke, TIA, or heart attack?',
-    'Any insulin use or A1C ≥ 8.5 within last 12 months?',
-    'Currently prescribed 3+ cardiac meds (e.g., beta blocker, ACE, statin)?'
-  ],
-  iul: [
-    'Any cancer (except basal cell) in past 5 years?',
-    'COPD, emphysema, or oxygen use?',
-    'Uncontrolled diabetes with complications?'
-  ],
-  whole: [
-    'Bedridden, hospice, or nursing home care?',
-    'Oxygen use for any condition?',
-    'ALS, dementia, or Alzheimer’s diagnosed?'
-  ]
-};
-
-// Prefill hooks
-function enter_plan(){
-  byId('plan_max').value = `$${form.max.toLocaleString()}`;
-  byId('plan_name').value =
-    form.product==='term' ? 'Term Life Express' :
-    form.product==='iul'  ? 'Indexed Universal Life Express' :
-                            'Whole Life Express';
-  byId('plan_tob').value = form.tob;
-}
-function enter_summary(){
-  byId('sum_state').value = form.pi.state;
-  byId('sum_age').value = form.pi.age;
-  byId('sum_gender').value = form.pi.gender;
-  byId('sum_plan').value = byId('plan_name').value;
-  byId('sum_face').value = `$${form.face.toLocaleString()}`;
-  byId('sum_tob').value = form.tob;
-}
-function enter_uw(){
-  const box = document.getElementById('uw_qs');
-  box.innerHTML='';
-  (UW[form.product]||[]).forEach((q,i)=>{
-    const div = document.createElement('div');
-    div.className='inline';
-    div.innerHTML = `<label>${q}</label>
-      <label><input type="radio" name="uw${i}" value="yes"> Yes</label>
-      <label><input type="radio" name="uw${i}" value="no" checked> No</label>`;
-    box.appendChild(div);
+/* Stepper state */
+function setStepper(view){
+  const stepIdx = view==="app-proposed" ? 1 : view==="app-driver" ? 2 : view==="app-payment" ? 3 : 0;
+  $$('.stepper').forEach(s=>{
+    $$('.step', s).forEach((node, i)=>{
+      node.classList.toggle('is-active', i+1 === stepIdx);
+      node.classList.toggle('is-done', i+1 < stepIdx);
+      const dot = $('.step__dot', node);
+      if(i+1 < stepIdx) dot.textContent = '✓'; else dot.textContent = String(i+1);
+    });
   });
 }
-function byId(i){return document.getElementById(i)}
 
-function finish(){
-  console.log('Trainer submit:', {form});
-  go('scr_done');
+/* Orientation guard */
+function wireOrientationGuard(){
+  const guard = $('#orientation-guard');
+  const update = () => {
+    const portrait = matchMedia('(orientation:portrait)').matches;
+    const narrow = innerWidth < 900;
+    guard.hidden = !(portrait && narrow);
+  };
+  update(); addEventListener('resize', update); addEventListener('orientationchange', update);
 }
 
-// Screen-entry observer (fires hooks when a screen becomes active)
-const entryHooks = {
-  'scr_plan': enter_plan,
-  'scr_summary': enter_summary,
-  'scr_uw': enter_uw
-};
-const observer = new MutationObserver(()=>{
-  const active = document.querySelector('.screen.active');
-  if(active && entryHooks[active.id]) entryHooks[active.id]();
-});
-observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
-
-// Init
-go('scr_welcome');
-
-// PWA: register service worker if available
-window.addEventListener('load', () => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(console.warn);
+/* PWA */
+function pwa(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
   }
+}
+
+/* Autosave */
+let saveTimer;
+function autosave(){
+  clearTimeout(saveTimer);
+  $('#save-status').textContent = 'Saving…';
+  saveTimer = setTimeout(()=>{
+    const payload = collectForm();
+    try{
+      localStorage.setItem(stateKey, JSON.stringify(payload));
+      $('#save-status').textContent = `Saved ${new Date().toLocaleTimeString()}`;
+    }catch{
+      $('#save-status').textContent = 'Save failed';
+    }
+  }, 500);
+}
+
+/* State helpers */
+function setVal(id, val){ const el = $('#'+id); if(el!=null) el.value = val ?? el.value; }
+function getVal(id){ const el = $('#'+id); return el?.value ?? ''; }
+function collectForm(){
+  return {
+    firstName:getVal('firstName'), lastName:getVal('lastName'), dob:getVal('dob'), age:getVal('age'), gender:getVal('gender'),
+    desc:getVal('desc'), coverage:getVal('coverage'), state:getVal('state'), ptype:getVal('ptype'),
+    pi_first:getVal('pi-first'), pi_mi:getVal('pi-mi'), pi_last:getVal('pi-last'),
+    pi_dob:getVal('pi-dob'), pi_age:getVal('pi-age'), pi_gender:getVal('pi-gender'),
+    ssn:getVal('pi-ssn'), h_ft:getVal('h-ft'), h_in:getVal('h-in'), pi_weight:getVal('pi-weight'),
+    dl: $('#dl-no')?.checked ? 'no':'yes', dl_number:getVal('dl-number'), dl_state:getVal('dl-state'),
+    birth_country:getVal('birth-country'), birth_state:getVal('birth-state'),
+    owner: $('#own-no')?.checked ? 'no':'yes',
+    bank_name:getVal('bank-name'), routing:getVal('routing'), account:getVal('account'),
+    payday: $('#pay-sched')?.checked ? 'sched':'any', weekday:getVal('weekday'), week:getVal('week'), amount:getVal('amount')
+  };
+}
+function restoreForm(){
+  try{
+    const data = JSON.parse(localStorage.getItem(stateKey) || '{}');
+
+    setVal('firstName', data.firstName);
+    setVal('lastName', data.lastName);
+    setVal('dob', data.dob);
+    setVal('age', data.age);
+    setVal('gender', data.gender);
+    setVal('desc', data.desc);
+    setVal('coverage', data.coverage);
+    setVal('state', data.state);
+    setVal('ptype', data.ptype);
+
+    setVal('pi-first', data.pi_first);
+    setVal('pi-mi', data.pi_mi);
+    setVal('pi-last', data.pi_last);
+    setVal('pi-dob', data.pi_dob);
+    setVal('pi-age', data.pi_age);
+    setVal('pi-gender', data.pi_gender);
+    setVal('pi-ssn', data.ssn);
+    setVal('h-ft', data.h_ft);
+    setVal('h-in', data.h_in);
+    setVal('pi-weight', data.pi_weight);
+
+    if(data.dl==='no') $('#dl-no').checked = true;
+    setVal('dl-number', data.dl_number);
+    setVal('dl-state', data.dl_state);
+    setVal('birth-country', data.birth_country);
+    setVal('birth-state', data.birth_state);
+    if(data.owner==='no') $('#own-no').checked = true;
+
+    setVal('bank-name', data.bank_name);
+    setVal('routing', data.routing);
+    setVal('account', data.account);
+    if(data.payday==='sched') $('#pay-sched').checked = true;
+    setVal('weekday', data.weekday);
+    setVal('week', data.week);
+    setVal('amount', data.amount);
+  }catch{}
+}
+
+/* Masks/validation */
+const onlyDigits = (v,max) => (v.replace(/\D+/g,'').slice(0,max ?? 999));
+const maskSSN = v => { const d = onlyDigits(v,9); const a=d.slice(0,3), b=d.slice(3,5), c=d.slice(5,9); return [a,b,c].filter(Boolean).join('-'); };
+const isABA = v => { const d = onlyDigits(v,9); if(d.length!==9) return false; const n=[...d].map(Number);
+  const sum = 3*(n[0]+n[3]+n[6]) + 7*(n[1]+n[4]+n[7]) + (n[2]+n[5]+n[8]); return sum % 10 === 0; };
+const maskCurrency = v => { const d = v.replace(/[^\d.]/g,''); const [i,f=''] = d.split('.'); const I = (i||'0').replace(/^0+(?=\d)/,'') || '0'; const F = (f+'00').slice(0,2); return `$${I}.${F}`; };
+function parseCurrency(v){ const d = v.replace(/[^\d]/g,''); return d ? parseInt(d,10) : 0; }
+
+/* Quote */
+function updateQuote(){
+  const age = parseInt(getVal('pi-age') || getVal('age') || '0', 10) || 0;
+  const cov = parseCurrency(getVal('coverage'));
+  const out = $('#quote-premium'); const meta = $('#quote-breakdown');
+  if(!out || !meta) return;
+  if(age<=0 || cov<=0){ out.textContent = '—'; meta.textContent = 'Enter Age & Coverage'; return; }
+  const base = 15, ageLoad = Math.max(0, age-30)*0.4, amtLoad = (cov/100000)*2.2;
+  const premium = (base + ageLoad + amtLoad).toFixed(2);
+  out.textContent = `$${premium}/mo`;
+  meta.textContent = `Base $${base.toFixed(2)} + Age $${ageLoad.toFixed(2)} + Amount $${amtLoad.toFixed(2)} for $${cov.toLocaleString()}`;
+}
+
+/* Wire inputs */
+function wireInputs(){
+  document.body.addEventListener('input', (e)=>{
+    const t = e.target;
+    if(!(t instanceof HTMLElement)) return;
+    if(t.id === 'pi-ssn'){ t.value = maskSSN(t.value); }
+    if(t.id === 'routing'){ t.value = onlyDigits(t.value,9); t.classList.toggle('error', !!t.value && !isABA(t.value)); }
+    if(t.id === 'account'){ t.value = onlyDigits(t.value,17); t.classList.toggle('error', !!t.value && (t.value.length<4 || t.value.length>17)); }
+    if(t.id === 'amount' || t.id === 'coverage'){ t.value = maskCurrency(t.value); }
+    if(t.id === 'coverage' || t.id === 'pi-age' || t.id === 'age'){ updateQuote(); }
+    autosave();
+  });
+
+  $('#btn-find-products')?.addEventListener('click', ()=>{
+    $('#product-list')?.removeAttribute('hidden');
+  });
+}
+
+/* Navigation */
+function wireNav(){
+  window.addEventListener('hashchange', ()=>{
+    const target = location.hash.replace('#/','') || 'home';
+    to(target);
+    updateQuote();
+  });
+  const initial = location.hash.replace('#/','') || 'home';
+  to(initial);
+}
+
+/* Boot */
+document.addEventListener('DOMContentLoaded', ()=>{
+  $('#year').textContent = new Date().getFullYear();
+  wireOrientationGuard();
+  pwa();
+  restoreForm();
+  wireInputs();
+  wireNav();
+  updateQuote();
 });
