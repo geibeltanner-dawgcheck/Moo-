@@ -5,22 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
   <meta name="theme-color" content="#2b99ca"/>
   <title>DAWGCHECK Trainer</title>
-
   <link rel="manifest" href="manifest.json"/>
   <link rel="icon" href="assets/icons/icon-192.png"/>
   <link rel="apple-touch-icon" href="assets/icons/icon-512.png"/>
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <!-- Landscape-only guard -->
   <div id="orientation-guard" class="og" hidden>
-    <div class="og-card">
-      <h2>Rotate device</h2>
-      <p>This trainer is landscape only.</p>
-    </div>
+    <div class="og-card"><h2>Rotate device</h2><p>This trainer is landscape only.</p></div>
   </div>
 
-  <!-- Header -->
   <header class="topbar">
     <div class="brand">
       <img src="assets/icons/icon-192.png" class="brand__logo" alt="DAWGCHECK logo">
@@ -29,11 +23,10 @@
     <nav class="topnav">
       <a href="#/cases" class="link">My Cases</a>
       <button class="link">Need Assistance?</button>
-      <div class="welcome"><span>Welcome</span><button class="link">TANNER ▾</button></div>
+      <div class="welcome"><span>Welcome</span><button class="link" id="btn-logout">Logout</button></div>
     </nav>
   </header>
 
-  <!-- Action strip -->
   <section class="actions">
     <span class="btn btn--ghost">Case Notes</span>
     <span class="btn btn--ghost">View Forms</span>
@@ -41,18 +34,25 @@
     <span id="save-status" class="save-status">Ready</span>
   </section>
 
-  <!-- Case vs Application tabs -->
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" data-tab="case">Case Information</button>
     <button class="tab" data-tab="app">Application</button>
   </nav>
 
-  <!-- Router views -->
   <main id="router" tabindex="-1">
+    <!-- LOGIN -->
+    <section class="view view--active" data-view="login">
+      <header class="section-hd"><h2>Sign In</h2></header>
+      <div class="form-grid">
+        <div class="field"><label>First Name</label><input id="login-first" class="input"/></div>
+        <div class="field"><label>Last Name</label><input id="login-last" class="input"/></div>
+      </div>
+      <div class="footer-nav"><button id="btn-login" class="btn btn--primary">Sign In</button></div>
+    </section>
+
     <!-- HOME -->
-    <section class="view view--active" data-view="home">
+    <section class="view" data-view="home" hidden>
       <div class="hero">
-        <div class="hero__bg"></div>
         <div class="hero__tiles">
           <a class="tile" href="#/start">Start New Case</a>
           <a class="tile" href="#/cases">View My Cases</a>
@@ -60,185 +60,59 @@
       </div>
     </section>
 
-    <!-- START CASE -->
+    <!-- START NEW CASE -->
     <section class="view" data-view="start" hidden>
-      <header class="section-hd">
-        <h2>Start New Case</h2>
-        <div class="pill pill--tab">Case Information</div>
-      </header>
-
+      <header class="section-hd"><h2>Start New Case</h2></header>
       <div class="form-grid">
         <fieldset class="fs"><legend>Proposed Insured</legend>
-          <div class="field"><label>First Name <b class="req">*</b></label><input id="firstName" class="input required"/></div>
-          <div class="field"><label>Last Name <b class="req">*</b></label><input id="lastName" class="input required"/></div>
-          <div class="field"><label>Date of Birth</label><input id="dob" type="date" class="input"/></div>
-          <div class="field"><label>Age</label><input id="age" type="number" class="input"/></div>
-          <div class="field"><label>Gender</label>
-            <select id="gender" class="select"><option value="">Please select…</option><option>Male</option><option>Female</option></select>
+          <div class="field"><label>First Name *</label><input id="firstName" class="input"/></div>
+          <div class="field"><label>Last Name *</label><input id="lastName" class="input"/></div>
+          <div class="field"><label>Date of Birth *</label><input id="dob" class="input" placeholder="MM/DD/YYYY"/></div>
+          <div class="field"><label>Age</label><input id="age" class="input" readonly/></div>
+          <div class="field"><label>Gender *</label>
+            <select id="gender" class="select"><option value="">Select…</option><option>Male</option><option>Female</option></select>
           </div>
         </fieldset>
-
         <fieldset class="fs"><legend>Case Details</legend>
-          <div class="field"><label>Description</label>
-            <input id="desc" class="input" placeholder="(Examples: $500,000, Kid’s Policy, etc.)"/>
-          </div>
-          <div class="field"><label>Coverage Amount <b class="req">*</b></label>
-            <input id="coverage" class="input required" inputmode="decimal" placeholder="$250,000"/>
-          </div>
+          <div class="field"><label>Description</label><input id="desc" class="input"/></div>
+          <div class="field"><label>Coverage Amount *</label><input id="coverage" class="input" inputmode="decimal"/></div>
         </fieldset>
-
         <fieldset class="fs"><legend>Carrier and Product</legend>
-          <div class="field"><label>State <b class="req">*</b></label>
-            <select id="state" class="select required"><option value="">Please select…</option><option>Nebraska</option><option>Texas</option><option>Louisiana</option></select>
+          <div class="field"><label>State *</label>
+            <select id="state" class="select">
+              <option value="">Please select…</option>
+              <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+              <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+              <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+              <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+              <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+              <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+              <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+              <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+              <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+              <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+              <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+              <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+              <option>Wisconsin</option><option>Wyoming</option>
+            </select>
           </div>
-          <div class="field"><label>Product Type <b class="req">*</b></label>
-            <select id="ptype" class="select required"><option value="">Please select…</option><option>Term Life</option><option>Final Expense</option><option>IUL</option></select>
-          </div>
-          <div class="field align-end">
-            <label class="vis">_</label><button id="btn-find-products" class="btn btn--primary" type="button">Find Available Products</button>
-          </div>
-
-          <div id="product-list" class="span-3" hidden>
-            <table class="table">
-              <thead><tr><th>Carrier</th><th>Product</th><th>e‑App</th></tr></thead>
-              <tbody>
-                <tr><td><span class="pill">DAWGCHECK</span></td><td>Term Life Answers – Full Application</td><td><a class="btn btn--ghost" href="#/app-proposed">Select</a></td></tr>
-                <tr><td><span class="pill">DAWGCHECK</span></td><td>Term Life Answers – Speed eTicket</td><td><a class="btn btn--ghost" href="#/app-proposed">Select</a></td></tr>
-                <tr><td><span class="pill">DAWGCHECK</span></td><td>Term Life Express – Point of Sale Decision</td><td><a class="btn btn--ghost" href="#/app-proposed">Select</a></td></tr>
-              </tbody>
-            </table>
+          <div class="field"><label>Product Type *</label>
+            <select id="ptype" class="select"><option value="">Select…</option><option>Term Life</option><option>Final Expense</option><option>IUL</option></select>
           </div>
         </fieldset>
       </div>
-
       <div class="footer-nav">
         <a class="btn btn--ghost" href="#/home">Back</a>
-        <a class="btn btn--primary" href="#/app-proposed">Next ▸</a>
+        <a class="btn btn--primary" href="#/app-1">Next ▸</a>
       </div>
     </section>
 
-    <!-- APPLICATION: PROPOSED -->
-    <section class="view" data-view="app-proposed" hidden>
-      <header class="section-hd">
-        <h2>Proposed Insured</h2>
-        <div class="pill pill--tab">Application</div>
-      </header>
-
-      <nav class="stepper" aria-label="Application steps">
-        <div class="step" data-step="1"><span class="step__dot">1</span><span class="step__label">Proposed</span></div>
-        <div class="step__sep"></div>
-        <div class="step" data-step="2"><span class="step__dot">2</span><span class="step__label">Driver</span></div>
-        <div class="step__sep"></div>
-        <div class="step" data-step="3"><span class="step__dot">3</span><span class="step__label">Payment</span></div>
-      </nav>
-
-      <div class="form-grid with-aside">
-        <div class="grid-main">
-          <div class="field"><label>First <b class="req">*</b></label><input id="pi-first" class="input required"/></div>
-          <div class="field"><label>Middle Initial</label><input id="pi-mi" class="input"/></div>
-          <div class="field"><label>Last <b class="req">*</b></label><input id="pi-last" class="input required"/></div>
-          <div class="field"><label>Date of Birth</label><input id="pi-dob" type="date" class="input"/></div>
-          <div class="field"><label>Age</label><input id="pi-age" type="number" class="input"/></div>
-          <div class="field"><label>Gender</label><select id="pi-gender" class="select"><option value="">Please select…</option><option>Male</option><option>Female</option></select></div>
-          <div class="field"><label>Social Security No.</label><input id="pi-ssn" class="input" inputmode="numeric" placeholder="___-__-____"/></div>
-          <div class="field"><label>Height</label><div class="inline">
-            <select id="h-ft" class="select"><option>5'</option><option>6'</option><option>7'</option></select>
-            <select id="h-in" class="select"><option>0"</option><option>6"</option><option>11"</option></select>
-          </div></div>
-          <div class="field"><label>Weight</label><input id="pi-weight" class="input" inputmode="numeric"/></div>
-        </div>
-
-        <aside class="quote" aria-live="polite">
-          <div class="quote__title">Quote Preview</div>
-          <div class="quote__value" id="quote-premium">—</div>
-          <div class="quote__meta" id="quote-breakdown">Enter Age & Coverage</div>
-        </aside>
-      </div>
-
-      <div class="footer-nav">
-        <a class="btn btn--ghost" href="#/start">Back</a>
-        <a class="btn btn--primary" href="#/app-driver">Next ▸</a>
-      </div>
-    </section>
-
-    <!-- APPLICATION: DRIVER -->
-    <section class="view" data-view="app-driver" hidden>
-      <header class="section-hd"><h2>Proposed Insured Cont’d</h2><div class="pill pill--tab">Application</div></header>
-
-      <nav class="stepper" aria-label="Application steps">
-        <div class="step" data-step="1"><span class="step__dot">1</span><span class="step__label">Proposed</span></div>
-        <div class="step__sep"></div>
-        <div class="step" data-step="2"><span class="step__dot">2</span><span class="step__label">Driver</span></div>
-        <div class="step__sep"></div>
-        <div class="step" data-step="3"><span class="step__dot">3</span><span class="step__label">Payment</span></div>
-      </nav>
-
-      <div class="form-grid">
-        <div class="field"><label>Does the Proposed Insured have a driver’s license?</label>
-          <div class="seg"><input id="dl-yes" type="radio" name="dl" checked><label for="dl-yes" class="seg__btn">Yes</label>
-            <input id="dl-no" type="radio" name="dl"><label for="dl-no" class="seg__btn">No</label></div>
-        </div>
-        <div class="field"><label>Driver’s License No.</label><input id="dl-number" class="input"/></div>
-        <div class="field"><label>Driver’s License State</label><select id="dl-state" class="select"><option>TX</option><option>LA</option><option>NE</option></select></div>
-        <div class="field"><label>Birth Country</label><select id="birth-country" class="select"><option>USA</option><option>Canada</option></select></div>
-        <div class="field"><label>State of Birth</label><select id="birth-state" class="select"><option>LA</option><option>NE</option><option>TX</option></select></div>
-        <div class="field"><label>Will the Proposed Insured be the Owner?</label>
-          <div class="seg"><input id="own-yes" type="radio" name="own" checked><label for="own-yes" class="seg__btn">Yes</label>
-            <input id="own-no" type="radio" name="own"><label for="own-no" class="seg__btn">No</label></div>
-        </div>
-      </div>
-
-      <div class="footer-nav">
-        <a class="btn btn--ghost" href="#/app-proposed">Back</a>
-        <a class="btn btn--primary" href="#/app-payment">Next ▸</a>
-      </div>
-    </section>
-
-    <!-- APPLICATION: PAYMENT -->
-    <section class="view" data-view="app-payment" hidden>
-      <header class="section-hd"><h2>Payment Information</h2><div class="pill pill--tab">Application</div></header>
-
-      <nav class="stepper" aria-label="Application steps">
-        <div class="step" data-step="1"><span class="step__dot">1</span><span class="step__label">Proposed</span></div>
-        <div class="step__sep"></div>
-        <div class="step" data-step="2"><span class="step__dot">2</span><span class="step__label">Driver</span></div>
-        <div class="step__sep"></div>
-        <div class="step" data-step="3"><span class="step__dot">3</span><span class="step__label">Payment</span></div>
-      </nav>
-
-      <div class="callout callout--warn">Please confirm the routing and account numbers entered and continue.</div>
-
-      <div class="form-grid">
-        <fieldset class="fs span-3"><legend>Bank</legend>
-          <div class="field"><label>Name of Financial Institution</label><input id="bank-name" class="input" value="Sutton bank"/></div>
-          <div class="field"><label>Routing Number</label><input id="routing" class="input" value="041215663" inputmode="numeric" maxlength="9"/></div>
-          <div class="field"><label>Account Number</label><input id="account" class="input" value="1325716469721" inputmode="numeric" maxlength="17"/></div>
-        </fieldset>
-
-        <fieldset class="fs span-3"><legend>Ongoing Automatic Monthly Premium Payments</legend>
-          <div class="field span-3">
-            <div class="seg seg--full">
-              <input id="pay-any" type="radio" name="payday" checked><label class="seg__btn" for="pay-any">Choose day each month</label>
-              <input id="pay-sched" type="radio" name="payday"><label class="seg__btn" for="pay-sched">Choose week & weekday</label>
-            </div>
-          </div>
-          <div class="field"><label>Weekday</label><select id="weekday" class="select"><option>Friday</option><option>Wednesday</option></select></div>
-          <div class="field"><label>Week</label><select id="week" class="select"><option>1</option><option>2</option><option>3</option></select></div>
-          <div class="field"><label>Amount Quoted</label><input id="amount" class="input" value="$132.76" inputmode="decimal"/></div>
-        </fieldset>
-      </div>
-
-      <div class="footer-nav">
-        <a class="btn btn--ghost" href="#/app-driver">Back</a>
-        <a class="btn btn--primary" href="#/app-success">Next ▸</a>
-      </div>
-    </section>
+    <!-- DYNAMIC APP STEPS WILL BE INJECTED HERE -->
+    <div id="app-steps-anchor"></div>
 
     <!-- SUCCESS -->
     <section class="view" data-view="app-success" hidden>
-      <div class="callout callout--success">
-        Thank you for submitting your Electronic Application! This policy has been approved. After any outstanding requirements are completed, the policy will be issued.
-      </div>
+      <div class="callout callout--success">Application submitted successfully!</div>
       <div class="footer-nav">
         <a class="btn btn--ghost" href="#/home">Back</a>
         <a class="btn btn--primary" href="#/home">Finish</a>
