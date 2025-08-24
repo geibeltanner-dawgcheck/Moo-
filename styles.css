@@ -32,6 +32,115 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-ap
 .divider{width:1px;height:18px;background:#ffffff35}
 .welcome{font-weight:600}
 
+/* View System */
+.view{display:block}
+.view[hidden]{display:none}
+
+/* Login View */
+.login-view{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  padding:2rem;
+}
+
+.login-container{
+  width:100%;
+  max-width:480px;
+}
+
+.login-card{
+  background:var(--panel);
+  border-radius:12px;
+  padding:2.5rem;
+  box-shadow:0 20px 40px rgba(0,0,0,0.1);
+  text-align:center;
+}
+
+.login-header{
+  margin-bottom:2rem;
+}
+
+.login-logo{
+  width:64px;
+  height:64px;
+  border-radius:12px;
+  margin-bottom:1rem;
+  object-fit:contain;
+  background:var(--brand);
+}
+
+.login-header h1{
+  margin:0 0 0.5rem 0;
+  color:var(--brand);
+  font-size:1.75rem;
+  font-weight:700;
+}
+
+.login-header p{
+  margin:0;
+  color:var(--muted);
+  font-size:1rem;
+}
+
+.login-form{
+  text-align:left;
+}
+
+.form-group{
+  margin-bottom:1.5rem;
+}
+
+.form-group label{
+  display:block;
+  margin-bottom:0.5rem;
+  font-weight:600;
+  color:var(--ink);
+}
+
+.form-group input{
+  width:100%;
+  padding:0.75rem 1rem;
+  border:2px solid var(--line);
+  border-radius:8px;
+  font-size:1rem;
+  transition:border-color 0.2s;
+}
+
+.form-group input:focus{
+  outline:none;
+  border-color:var(--brand);
+}
+
+.btn--large{
+  padding:1rem 2rem;
+  font-size:1.1rem;
+  width:100%;
+  margin-top:1rem;
+}
+
+.login-footer{
+  margin-top:2rem;
+  padding-top:1.5rem;
+  border-top:1px solid var(--line);
+}
+
+.login-footer p{
+  margin:0;
+  color:var(--muted);
+}
+
+/* App View - initially hidden */
+.app-view{
+  display:block;
+}
+
+.app-view[hidden]{
+  display:none;
+}
+
 /* Layout */
 .app-layout{
   display:grid;grid-template-columns:300px 1fr;gap:1rem;max-width:1500px;margin:0 auto;padding:1rem;

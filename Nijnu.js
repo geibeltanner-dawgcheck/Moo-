@@ -1,4 +1,4 @@
-# /app.js
+/* DAWGCHECK Training Simulator - Main JavaScript */
 const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const stateKey = "dc-form";
@@ -26,12 +26,33 @@ $('#btn-login')?.addEventListener('click', ()=>{
   const ln = $('#login-last').value.trim();
   if(!fn||!ln){ alert('Enter first and last name'); return; }
   localStorage.setItem('dc-user', JSON.stringify({first:fn,last:ln}));
-  $('#prod-name')?.setAttribute('placeholder', `${fn} ${ln}`);
-  $('.welcome span').textContent = `Welcome ${fn} ${ln}`;
+  $('#prod-first')?.setAttribute('placeholder', `${fn}`);
+  $('#prod-last')?.setAttribute('placeholder', `${ln}`);
+  $('.welcome').textContent = `Welcome ${fn} ${ln}`;
   to('home');
 });
 $('#btn-logout')?.addEventListener('click', ()=>{ localStorage.removeItem('dc-user'); to('login'); });
-try{ const u = JSON.parse(localStorage.getItem('dc-user')||'null'); if(u){ $('.welcome span').textContent=`Welcome ${u.first} ${u.last}`; $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); to('home'); } }catch{}
+
+/* Check if user is logged in, but don't auto-login */
+function checkLoginStatus(){
+  try{ 
+    const u = JSON.parse(localStorage.getItem('dc-user')||'null'); 
+    if(u){ 
+      $('.welcome').textContent = `Welcome ${u.first} ${u.last}`; 
+      $('#prod-first')?.setAttribute('placeholder', u.first); 
+      $('#prod-last')?.setAttribute('placeholder', u.last); 
+      return true;
+    } 
+  }catch{}
+  return false;
+}
+
+/* Initialize with login view */
+if(!checkLoginStatus()) {
+  to('login');
+} else {
+  to('home');
+}
 
 /* Orientation guard */
 (function(){
@@ -106,7 +127,7 @@ document.body.addEventListener('input', (e)=>{
 
 /* Hash router */
 window.addEventListener('hashchange', ()=>{ const target = location.hash.replace('#/','') || 'home'; to(target); });
-if(!location.hash) to('login'); else to(location.hash.replace('#/',''));
+/* Router starts with login check instead of forcing login */
 
 /* Beneficiaries */
 const beneBody = $('#bene-body');
@@ -190,37 +211,8 @@ $('#email-add-btn')?.addEventListener('click', ()=>{
 /* Prefill producer name placeholder on load */
 document.addEventListener('DOMContentLoaded', ()=>{
   const u = JSON.parse(localStorage.getItem('dc-user')||'null');
-  if(u){ $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); }
-});
-
-# /manifest.json
-{
-  "name": "DAWGCHECK Trainer",
-  "short_name": "DAWGCHECK",
-  "start_url": "./",
-  "display": "standalone",
-  "orientation": "landscape",
-  "background_color": "#f3f5f7",
-  "theme_color": "#2b99ca",
-  "icons": [
-    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
-
-# /service-worker.js
-const CACHE="dawgtrainer-v6";
-const ASSETS=[
-  "./","./index.html","./styles.css","./app.js","./manifest.json",
-  "./assets/icons/icon-192.png","./assets/icons/icon-512.png","./assets/city.jpg"
-];
-self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
-self.addEventListener("fetch",e=>{
-  if(e.request.method!=="GET")return;
-  if(e.request.destination==="document"){
-    e.respondWith(fetch(e.request).then(r=>{caches.open(CACHE).then(c=>c.put(e.request,r.clone()));return r;}).catch(()=>caches.match(e.request)));
-  }else{
-    e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{caches.open(CACHE).then(cc=>cc.put(e.request,r.clone()));return r;})));
+  if(u){ 
+    $('#prod-first')?.setAttribute('placeholder', u.first); 
+    $('#prod-last')?.setAttribute('placeholder', u.last); 
   }
 });
