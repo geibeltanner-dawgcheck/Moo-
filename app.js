@@ -2,22 +2,62 @@
 const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const stateKey = "dc-form";
+const STEP_TITLES = [
+  "Producer Information","Proposed Insured","Confirm Identity – Proposed Insured",
+  "HIPAA Signature and Lock Data","HIPAA Signature Method","Proposed Insured Cont’d",
+  "Insurance History","Plan Information","Pre-Approval Information","Underwriting",
+  "Beneficiaries","Premium Summary","Automatic Bill Pay","Validate and Lock Data",
+  "Attachments","Post Submission Email Setup","Signature Method","Producer Statement",
+  "Welcome Consent – Producer","Apply eSignature – Producer"
+];
+
+/* Build step nav */
+(function buildStepNav(){
+  const list = $('#step-list'); if(!list) return;
+  list.innerHTML = STEP_TITLES.map((t,i)=>`
+    <li data-step="${i+1}" id="step-nav-${i+1}">
+      <span class="step-dot">${i+1}</span><span>${t}</span>
+    </li>
+  `).join('');
+  list.addEventListener('click', e=>{
+    const li = e.target.closest('li[data-step]'); if(!li) return;
+    const step = li.getAttribute('data-step');
+    to(`app-${step}`);
+  });
+})();
 
 /* Router */
-function to(view){
-  $$('.view').forEach(v=>{
-    const active = v.dataset.view === view;
-    v.hidden = !active; v.classList.toggle('view--active', active);
-  });
-  const app = /^app-/.test(view);
+function setAppChrome(isApp){
   const tabs = $$('.tabs .tab');
   if(tabs.length===2){
-    tabs[0].style.background = app ? '#cfe6f4' : '#fff';
-    tabs[0].style.borderBottom = app ? '0' : '3px solid var(--blue-800)';
-    tabs[1].style.background = app ? '#fff' : '#cfe6f4';
-    tabs[1].style.borderBottom = app ? '3px solid var(--blue-800)' : '0';
+    tabs[0].style.background = isApp ? '#cfe6f4' : '#fff';
+    tabs[0].style.borderBottom = isApp ? '0' : '3px solid var(--blue-800)';
+    tabs[1].style.background = isApp ? '#fff' : '#cfe6f4';
+    tabs[1].style.borderBottom = isApp ? '3px solid var(--blue-800)' : '0';
   }
-  location.hash = `/${view}`;
+  $('#step-nav').hidden = !isApp;
+}
+function markStep(view){
+  const m = view.match(/^app-(\d{1,2})$/); if(!m) { $$('#step-list li').forEach(li=>li.classList.remove('is-active','is-done')); return; }
+  const idx = +m[1];
+  $$('#step-list li').forEach((li,i)=>{
+    li.classList.toggle('is-active', i+1===idx);
+    li.classList.toggle('is-done', i+1<idx);
+    const dot = $('.step-dot', li);
+    dot.textContent = (i+1<idx) ? '✓' : String(i+1);
+  });
+}
+function to(view){
+  const target = $(`[data-view="${view}"]`) ? view : "home";
+  $$('.view').forEach(v=>{
+    const active = v.dataset.view===target;
+    v.hidden=!active; v.classList.toggle('view--active', active);
+  });
+  const isApp = /^app-/.test(target);
+  setAppChrome(isApp);
+  markStep(target);
+  location.hash = `/${target}`;
+  $('#router')?.focus();
 }
 
 /* Login */
@@ -26,12 +66,15 @@ $('#btn-login')?.addEventListener('click', ()=>{
   const ln = $('#login-last').value.trim();
   if(!fn||!ln){ alert('Enter first and last name'); return; }
   localStorage.setItem('dc-user', JSON.stringify({first:fn,last:ln}));
-  $('#prod-name')?.setAttribute('placeholder', `${fn} ${ln}`);
   $('.welcome span').textContent = `Welcome ${fn} ${ln}`;
+  $('#prod-name')?.setAttribute('placeholder', `${fn} ${ln}`);
   to('home');
 });
 $('#btn-logout')?.addEventListener('click', ()=>{ localStorage.removeItem('dc-user'); to('login'); });
-try{ const u = JSON.parse(localStorage.getItem('dc-user')||'null'); if(u){ $('.welcome span').textContent=`Welcome ${u.first} ${u.last}`; $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); to('home'); } }catch{}
+try{
+  const u = JSON.parse(localStorage.getItem('dc-user')||'null');
+  if(u){ $('.welcome span').textContent=`Welcome ${u.first} ${u.last}`; $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); to('home'); }
+}catch{}
 
 /* Orientation guard */
 (function(){
@@ -51,18 +94,31 @@ const maskCurrency = v => { const d = v.replace(/[^\d.]/g,''); const [i,f=''] = 
 const maskPhone = v => { const d=onlyDigits(v,10); if(d.length<=3) return d; if(d.length<=6) return `(${d.slice(0,3)}) ${d.slice(3)}`; return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,10)}`; };
 
 /* DOB -> Age */
-function calcAge(val){ const m=val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/); if(!m) return ''; let [_,MM,DD,YYYY]=m; MM=+MM; DD=+DD; YYYY=+YYYY; if(YYYY<100) YYYY+=2000; const b=new Date(YYYY,MM-1,DD); if(isNaN(+b)) return ''; const t=new Date(); let age=t.getFullYear()-b.getFullYear(); const md=t.getMonth()-b.getMonth(); if(md<0||(md===0&&t.getDate()<b.getDate())) age--; return age>0?String(age):''; }
-function wireDOBtoAge(){ $$('.dob').forEach(dob=>{ const age = dob.closest('.form-grid')?.querySelector('.age'); if(!age) return; dob.addEventListener('input', e=>{ age.value = calcAge(e.target.value.trim()); autosave(); }); }); }
+function calcAge(val){
+  const m=val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/); if(!m) return '';
+  let [_,MM,DD,YYYY]=m; MM=+MM; DD=+DD; YYYY=+YYYY; if(YYYY<100) YYYY+=2000;
+  const b=new Date(YYYY,MM-1,DD); if(isNaN(+b)) return '';
+  const t=new Date(); let age=t.getFullYear()-b.getFullYear();
+  const md=t.getMonth()-b.getMonth(); if(md<0||(md===0&&t.getDate()<b.getDate())) age--;
+  return age>0?String(age):'';
+}
+function wireDOBtoAge(){
+  $$('.dob').forEach(dob=>{
+    const age = dob.closest('.form-grid,.fs,.view')?.querySelector('.age'); if(!age) return;
+    dob.addEventListener('input', e=>{ age.value = calcAge(e.target.value.trim()); autosave(); });
+  });
+}
 wireDOBtoAge();
 
 /* Autosave */
 let saveTimer;
 function autosave(){
   clearTimeout(saveTimer);
-  $('#save-status').textContent = 'Saving…';
-  saveTimer = setTimeout(()=>{
-    try{ localStorage.setItem(stateKey, JSON.stringify(collectForm())); $('#save-status').textContent = 'Saved'; }catch{ $('#save-status').textContent='Save failed'; }
-  }, 350);
+  $('#save-status').textContent='Saving…';
+  saveTimer=setTimeout(()=>{
+    try{ localStorage.setItem(stateKey, JSON.stringify(collectForm())); $('#save-status').textContent='Saved'; }
+    catch{ $('#save-status').textContent='Save failed'; }
+  }, 300);
 }
 function collectForm(){
   const data = {};
@@ -78,15 +134,13 @@ function restoreForm(){
   try{
     const d = JSON.parse(localStorage.getItem(stateKey)||'{}');
     Object.entries(d).forEach(([id,v])=>{
-      const el = $('#'+id);
-      if(!el) return;
-      if(el.type==='checkbox' || el.type==='radio') el.checked = !!v;
+      const el = $('#'+id); if(!el) return;
+      if(el.type==='checkbox'||el.type==='radio') el.checked = !!v;
       else if(el.type!=='file') el.value = v;
     });
-    // recompute ages if DOB present
-    $$('.dob').forEach(dob=>{ const age = dob.closest('.form-grid')?.querySelector('.age'); if(age) age.value = calcAge(dob.value||''); });
-    updateBeneTotals();
-    renderEmailList();
+    // recompute ages
+    $$('.dob').forEach(dob=>{ const age = dob.closest('.form-grid,.fs,.view')?.querySelector('.age'); if(age) age.value = calcAge(dob.value||''); });
+    updateBeneTotals(); renderEmailList();
   }catch{}
 }
 restoreForm();
@@ -122,8 +176,7 @@ function beneRow(id, name='', rel='', type='Primary', pct=''){
 function updateBeneTotals(){
   let total = 0;
   $$('[id^="bene-pct-"]').forEach(i=>{ const n = parseInt(onlyDigits(i.value,3)||'0',10); i.value = String(n); total += (isNaN(n)?0:n); });
-  $('#bene-total').textContent = `Total: ${total}%`;
-  $('#bene-total').style.color = (total===100?'#0a7b12':'#b00020');
+  const el = $('#bene-total'); if(el){ el.textContent = `Total: ${total}%`; el.style.color = (total===100?'#0a7b12':'#b00020'); }
 }
 $('#bene-add')?.addEventListener('click', ()=>{
   const id = Math.random().toString(36).slice(2,8);
@@ -153,9 +206,7 @@ $('#btn-validate')?.addEventListener('click', ()=>{
     el.classList.toggle('error', bad);
     if(bad) errs.push(`Missing: ${id}`);
   });
-  // routing/account format
   if($('#routing') && $('#routing').value && !isABA($('#routing').value)) errs.push('Routing number invalid');
-  // beneficiaries total must be 100 if any rows exist
   if($('#bene-body') && $('#bene-body').children.length>0){
     const total = [...$$('[id^="bene-pct-"]')].reduce((a,i)=>a+(parseInt(i.value||'0',10)||0),0);
     if(total!==100) errs.push('Beneficiaries must total 100%');
@@ -170,10 +221,8 @@ function renderEmailList(){
   const data = JSON.parse(localStorage.getItem(stateKey)||'{}');
   const emails = (data._emails||[]); ul.innerHTML='';
   emails.forEach((em,i)=>{
-    const li = document.createElement('li');
-    li.textContent = em + ' ';
-    const btn = document.createElement('button');
-    btn.className='btn btn--ghost'; btn.textContent='Remove';
+    const li = document.createElement('li'); li.textContent = em + ' ';
+    const btn = document.createElement('button'); btn.className='btn btn--ghost'; btn.textContent='Remove';
     btn.addEventListener('click', ()=>{
       const d = JSON.parse(localStorage.getItem(stateKey)||'{}');
       (d._emails||[]).splice(i,1); localStorage.setItem(stateKey, JSON.stringify(d)); renderEmailList();
@@ -187,11 +236,8 @@ $('#email-add-btn')?.addEventListener('click', ()=>{
   localStorage.setItem(stateKey, JSON.stringify(d)); box.value=''; renderEmailList();
 });
 
-/* Prefill producer name placeholder on load */
-document.addEventListener('DOMContentLoaded', ()=>{
-  const u = JSON.parse(localStorage.getItem('dc-user')||'null');
-  if(u){ $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); }
-});
+/* Footer year */
+$('#year').textContent = new Date().getFullYear();
 
 # /manifest.json
 {
@@ -207,20 +253,3 @@ document.addEventListener('DOMContentLoaded', ()=>{
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
-
-# /service-worker.js
-const CACHE="dawgtrainer-v6";
-const ASSETS=[
-  "./","./index.html","./styles.css","./app.js","./manifest.json",
-  "./assets/icons/icon-192.png","./assets/icons/icon-512.png","./assets/city.jpg"
-];
-self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
-self.addEventListener("fetch",e=>{
-  if(e.request.method!=="GET")return;
-  if(e.request.destination==="document"){
-    e.respondWith(fetch(e.request).then(r=>{caches.open(CACHE).then(c=>c.put(e.request,r.clone()));return r;}).catch(()=>caches.match(e.request)));
-  }else{
-    e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{caches.open(CACHE).then(cc=>cc.put(e.request,r.clone()));return r;})));
-  }
-});
