@@ -1,43 +1,36 @@
-// service-worker.js - stable cache-first PWA worker with network fallback
-const CACHE = "dawgtrainer-v11";
+// DAWGCHECK Training Simulator – Service Worker
+const CACHE = 'dawgcheck-cache-v3';
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./manifest.json",
-  "./assets/icons/icon-192.png",
-  "./assets/icons/icon-512.png",
-  "./assets/city.jpg"
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './assets/icons/dawgcheck-192.png',
+  './assets/icons/dawgcheck-512.png'
 ];
 
-self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
+self.addEventListener('install', (event)=>{
+  event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
   self.skipWaiting();
 });
-
-self.addEventListener("activate", event => {
+self.addEventListener('activate', (event)=>{
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-  );
+    caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))))
   self.clients.claim();
 });
-
-self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
+self.addEventListener('fetch', (event)=>{
+  if (event.request.method!=='GET') return;
   event.respondWith(
-    caches.match(event.request).then(cached => {
+    caches.match(event.request).then(cached=>{
       if (cached) return cached;
-      return fetch(event.request).then(networkResponse => {
-        // Only cache same-origin GET responses
-        try {
-          const cloned = networkResponse.clone();
-          if (networkResponse && networkResponse.ok) {
-            caches.open(CACHE).then(cache => cache.put(event.request, cloned));
-          }
-        } catch (err) { /* ignore caching errors */ }
-        return networkResponse;
-      }).catch(() => caches.match('./index.html'));
+      return fetch(event.request).then(resp=>{
+        const copy = resp.clone();
+        if (resp.ok && new URL(event.request.url).origin === location.origin) {
+          caches.open(CACHE).then(c=>c.put(event.request, copy)).catch(()=>{});
+        }
+        return resp;
+      }).catch(()=>caches.match('./index.html'));
     })
   );
 });
