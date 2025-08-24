@@ -4,170 +4,177 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <meta name="theme-color" content="#2b99ca"/>
-  <title>DAWGCHECK Trainer</title>
-
-  <!-- PWA / app icons -->
-  <link rel="manifest" href="manifest.json"/>
-  <link rel="icon" href="assets/icons/icon-192.png"/>
-  <link rel="apple-touch-icon" href="assets/icons/icon-512.png"/>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css?v=11"/>
+  <title>Mutual of Omaha App Replica</title>
+  <link rel="stylesheet" href="styles.css?v=12"/>
 </head>
 <body>
-  <!-- Orientation guard -->
-  <div id="orientation-guard" class="og" hidden>
-    <div class="og-card"><h2>Rotate device</h2><p>This trainer works best in landscape.</p></div>
-  </div>
-
-  <!-- Header -->
   <header class="topbar">
     <div class="brand">
-      <img src="assets/icons/icon-192.png" class="brand__logo" alt="DAWGCHECK logo">
-      <div class="brand__text"><strong>DAWGCHECK</strong><span>Trainer</span></div>
+      <img src="assets/icons/icon-192.png" class="brand__logo" alt="Mutual of Omaha logo">
+      <div class="brand__text"><strong>Mutual of Omaha</strong><span>Application</span></div>
     </div>
     <nav class="topnav" aria-label="Top navigation">
-      <a href="#/cases" class="link">My Cases</a>
-      <button class="link" id="assist" aria-haspopup="dialog">Need Assistance?</button>
-      <div class="welcome"><span>Welcome</span><button class="link" id="btn-logout">Logout</button></div>
+      <a href="#" class="link" style="pointer-events:none">My Cases</a>
+      <span class="welcome"><span>Welcome TANNER GEIBEL</span></span>
     </nav>
   </header>
 
-  <!-- Action strip -->
-  <section class="actions" role="region" aria-label="Action strip">
-    <span class="btn btn--ghost" aria-hidden="true">Case Notes</span>
-    <span class="btn btn--ghost" aria-hidden="true">View Forms</span>
-    <span class="btn btn--ghost" aria-hidden="true">Case Actions ▾</span>
-    <span id="save-status" class="save-status" aria-live="polite">Ready</span>
-  </section>
-
-  <!-- Tabs -->
-  <nav class="tabs" role="tablist" aria-label="Sections">
-    <button class="tab" data-tab="case" role="tab">Case Information</button>
-    <button class="tab" data-tab="app" role="tab">Application</button>
-  </nav>
-
-  <!-- App layout -->
   <div class="app-layout">
-    <aside id="step-nav" aria-label="Application steps" hidden>
-      <ol id="step-list"></ol>
+    <!-- Sidebar Navigation -->
+    <aside id="step-nav" aria-label="Application steps">
+      <ol id="step-list">
+        <li data-step="1" class="is-active"><span class="step-dot">1</span>Producer Info</li>
+        <li data-step="2"><span class="step-dot">2</span>Proposed Insured</li>
+        <li data-step="3"><span class="step-dot">3</span>Product Selection</li>
+        <li data-step="4"><span class="step-dot">4</span>Beneficiaries</li>
+        <li data-step="5"><span class="step-dot">5</span>Premium Summary</li>
+        <li data-step="6"><span class="step-dot">6</span>Billing</li>
+        <li data-step="7"><span class="step-dot">7</span>Signatures</li>
+        <li data-step="8"><span class="step-dot">8</span>Finish</li>
+      </ol>
     </aside>
 
-    <main id="router" tabindex="-1" role="main">
-      <!-- LOGIN -->
-      <section class="view view--active" data-view="login">
-        <header class="section-hd"><h2>Sign In</h2></header>
-        <div class="form-grid">
-          <div class="field"><label for="login-first">First Name</label><input id="login-first" class="input" autocomplete="given-name"/></div>
-          <div class="field"><label for="login-last">Last Name</label><input id="login-last" class="input" autocomplete="family-name"/></div>
-        </div>
-        <div class="footer-nav"><button id="btn-login" class="btn btn--primary">Sign In</button></div>
-      </section>
-
-      <!-- HOME -->
-      <section class="view" data-view="home" hidden>
-        <div class="hero" role="region" aria-label="Get started">
-          <div class="hero__bg" aria-hidden="true"></div>
-          <div class="hero__tiles">
-            <a class="tile" href="#/start" role="button">Start New Case</a>
-            <a class="tile" href="#/cases" role="button">View My Cases</a>
+    <main id="wizard-main">
+      <form id="wizard-form" autocomplete="off">
+        <!-- Step 1: Producer Info -->
+        <section class="wizard-step" data-step="1">
+          <header class="section-hd"><h2>Producer Information</h2></header>
+          <div class="form-grid">
+            <div class="field"><label>First Name <b class="req">*</b></label><input id="prod-fn" class="input required" autocomplete="given-name" /></div>
+            <div class="field"><label>Last Name <b class="req">*</b></label><input id="prod-ln" class="input required" autocomplete="family-name" /></div>
+            <div class="field"><label>Producer ID</label><input id="prod-id" class="input" /></div>
+            <div class="field"><label>Date of Birth</label><input id="prod-dob" class="input dob" placeholder="MM/DD/YYYY" /></div>
+            <div class="field"><label>SSN</label><input id="prod-ssn" class="input ssn" maxlength="11" /></div>
+            <div class="field"><label>Email</label><input id="prod-email" class="input" type="email"/></div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- START NEW CASE -->
-      <section class="view" data-view="start" hidden>
-        <header class="section-hd"><h2>Start New Case</h2><div class="pill pill--tab">Case Information</div></header>
-        <div class="form-grid" role="form" aria-label="Start case form">
-          <fieldset class="fs"><legend>Proposed Insured</legend>
-            <div class="field"><label for="firstName">First Name <b class="req">*</b></label><input id="firstName" class="input required" autocomplete="given-name"/></div>
-            <div class="field"><label for="lastName">Last Name <b class="req">*</b></label><input id="lastName" class="input required" autocomplete="family-name"/></div>
-            <div class="field"><label for="dob">Date of Birth <b class="req">*</b></label><input id="dob" class="input dob" placeholder="MM/DD/YYYY" inputmode="numeric" autocomplete="bday"/></div>
-            <div class="field"><label for="age">Age</label><input id="age" class="input age" readonly/></div>
-            <div class="field"><label for="gender">Gender <b class="req">*</b></label>
-              <select id="gender" class="select required" aria-required="true"><option value="">Please select…</option><option>Male</option><option>Female</option></select>
+        <!-- Step 2: Proposed Insured -->
+        <section class="wizard-step" data-step="2" hidden>
+          <header class="section-hd"><h2>Proposed Insured</h2></header>
+          <div class="form-grid">
+            <div class="field"><label>First Name <b class="req">*</b></label><input id="pi-fn" class="input required" autocomplete="given-name" /></div>
+            <div class="field"><label>Last Name <b class="req">*</b></label><input id="pi-ln" class="input required" autocomplete="family-name" /></div>
+            <div class="field"><label>Date of Birth <b class="req">*</b></label><input id="pi-dob" class="input dob required" placeholder="MM/DD/YYYY" /></div>
+            <div class="field"><label>Age</label><input id="pi-age" class="input age" readonly/></div>
+            <div class="field"><label>Gender <b class="req">*</b></label>
+              <select id="pi-gender" class="select required">
+                <option value="">Please select…</option><option>Male</option><option>Female</option>
+              </select>
             </div>
-          </fieldset>
+            <div class="field"><label>SSN <b class="req">*</b></label><input id="pi-ssn" class="input ssn required" maxlength="11" /></div>
+          </div>
+        </section>
 
-          <fieldset class="fs"><legend>Case Details</legend>
-            <div class="field"><label for="desc">Description</label><input id="desc" class="input" placeholder="(Examples: $500,000, Kid’s Policy, etc.)"/></div>
-            <div class="field"><label for="coverage">Coverage Amount <b class="req">*</b></label><input id="coverage" class="input money required" inputmode="decimal" placeholder="$250,000"/></div>
-          </fieldset>
-
-          <fieldset class="fs"><legend>Carrier and Product</legend>
-            <div class="field"><label for="state">State <b class="req">*</b></label>
-              <select id="state" class="select required" aria-required="true">
+        <!-- Step 3: Product Selection -->
+        <section class="wizard-step" data-step="3" hidden>
+          <header class="section-hd"><h2>Product Selection</h2></header>
+          <div class="form-grid">
+            <div class="field"><label>State <b class="req">*</b></label>
+              <select id="state" class="select required">
                 <option value="">Please select…</option>
-                <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
-                <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
-                <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
-                <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
-                <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
-                <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
-                <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
-                <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
-                <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
-                <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
-                <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
-                <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
-                <option>Wisconsin</option><option>Wyoming</option>
+                <option>Nebraska</option>
+                <option>California</option>
+                <option>Texas</option>
               </select>
             </div>
-
-            <div class="field"><label for="ptype">Product Type <b class="req">*</b></label>
-              <select id="ptype" class="select required" aria-required="true">
-                <option value="">Please select…</option><option>Term Life</option><option>Final Expense</option><option>IUL</option>
+            <div class="field"><label>Product Type <b class="req">*</b></label>
+              <select id="ptype" class="select required">
+                <option value="">Please select…</option>
+                <option>Term Life</option>
+                <option>Final Expense</option>
+                <option>IUL</option>
               </select>
             </div>
-
-            <div class="field"><label for="product">Product <b class="req">*</b></label>
-              <select id="product" class="select required" aria-required="true"><option value="">Select a product…</option></select>
+            <div class="field"><label>Coverage Amount <b class="req">*</b></label>
+              <input id="coverage" class="input money required" placeholder="$250,000"/>
             </div>
-          </fieldset>
-        </div>
+            <div class="field span-2"><label>Product <b class="req">*</b></label>
+              <select id="product" class="select required"><option value="">Select a product…</option></select>
+            </div>
+          </div>
+          <div class="footer-nav" style="justify-content:flex-start">
+            <button type="button" id="find-products" class="btn btn--primary">Find Available Products</button>
+            <span id="find-status" style="margin-left:1rem;color:#0e5f8f"></span>
+          </div>
+        </section>
+
+        <!-- Step 4: Beneficiaries -->
+        <section class="wizard-step" data-step="4" hidden>
+          <header class="section-hd"><h2>Beneficiaries</h2></header>
+          <table class="table">
+            <thead><tr><th>Name</th><th>Relationship</th><th>Type</th><th>%</th><th></th></tr></thead>
+            <tbody id="bene-body"></tbody>
+            <tfoot>
+              <tr><td colspan="3"></td><td id="bene-total">Total: 0%</td><td></td></tr>
+            </tfoot>
+          </table>
+          <button type="button" id="bene-add" class="btn btn--ghost">Add Beneficiary</button>
+        </section>
+
+        <!-- Step 5: Premium Summary -->
+        <section class="wizard-step" data-step="5" hidden>
+          <header class="section-hd"><h2>Premium Summary</h2></header>
+          <div class="form-grid">
+            <div class="field"><label>Quoted Premium (Monthly)</label>
+              <input id="prem-mo" class="input money" placeholder="$0.00" readonly />
+            </div>
+            <div class="field"><label>Premium Mode</label>
+              <select id="prem-mode" class="select"><option>Monthly</option><option>Quarterly</option><option>Semi-Annual</option><option>Annual</option></select>
+            </div>
+            <div class="field"><label>Draft on Approval</label>
+              <select id="prem-draft" class="select"><option>No</option><option>Yes</option></select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 6: Billing -->
+        <section class="wizard-step" data-step="6" hidden>
+          <header class="section-hd"><h2>Billing</h2></header>
+          <div class="form-grid">
+            <div class="field"><label>Bill Pay Method</label>
+              <select id="bill-pay" class="select"><option>Monthly Automatic Bill Pay</option><option>Direct Bill Quarterly</option></select>
+            </div>
+            <div class="field"><label>Routing Number</label>
+              <input id="routing" class="input routing" maxlength="9"/>
+            </div>
+            <div class="field"><label>Account Number</label>
+              <input id="account" class="input account" maxlength="17"/>
+            </div>
+            <div class="field"><label>Name on Account</label>
+              <input id="acct-name" class="input" />
+            </div>
+            <div class="field"><label>Type of Account</label>
+              <select id="acct-type" class="select">
+                <option>Checking</option><option>Savings</option>
+              </select>
+            </div>
+            <div class="field"><label>Name of Financial Institution</label>
+              <input id="bank-name" class="input"/>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 7: Signatures -->
+        <section class="wizard-step" data-step="7" hidden>
+          <header class="section-hd"><h2>Signatures</h2></header>
+          <div class="callout">Please confirm all information above is accurate, then click Finish to sign and submit.</div>
+        </section>
+
+        <!-- Step 8: Finish -->
+        <section class="wizard-step" data-step="8" hidden>
+          <header class="section-hd"><h2>Application Submitted</h2></header>
+          <div class="callout callout--success">Thank you for submitting your Electronic Application! This policy has been approved.</div>
+        </section>
 
         <div class="footer-nav">
-          <a class="btn btn--ghost" href="#/home">Back</a>
-          <a class="btn btn--primary" href="#/app-1">Next ▸</a>
+          <button type="button" id="btn-back" class="btn btn--ghost" disabled>Back</button>
+          <button type="button" id="btn-next" class="btn btn--primary">Next ▸</button>
         </div>
-      </section>
-
-      <!-- Remaining views remain the same as the repository; premium field is readonly and generated by app.js -->
-
-      <!-- Premium summary (example location where the calculated premium is shown) -->
-      <section class="view" data-view="app-12" hidden>
-        <header class="section-hd"><h2>Premium Summary</h2><div class="pill pill--tab">Application</div></header>
-        <div class="form-grid">
-          <div class="field"><label for="prem-mo">Quoted Premium (Monthly)</label><input id="prem-mo" class="input money" placeholder="$0.00" readonly /></div>
-          <div class="field"><label for="prem-mode">Mode</label><select id="prem-mode" class="select"><option>Monthly</option><option>Quarterly</option><option>Semi-Annual</option><option>Annual</option></select></div>
-          <div class="field"><label for="prem-draft">Draft on Approval</label><select id="prem-draft" class="select"><option>No</option><option>Yes</option></select></div>
-        </div>
-        <div class="footer-nav"><a class="btn btn--ghost" href="#/app-11">Back</a><a class="btn btn--primary" href="#/app-13">Next ▸</a><button class="btn btn--ghost" onclick="window.print()">Print or Save as PDF</button></div>
-      </section>
-
-      <!-- Success & Cases -->
-      <section class="view" data-view="app-success" hidden>
-        <div class="callout callout--success">Thank you for submitting your Electronic Application! This policy has been approved.</div>
-        <div class="footer-nav"><a class="btn btn--ghost" href="#/home">Back</a><a class="btn btn--primary" href="#/home">Finish</a></div>
-      </section>
-
-      <section class="view" data-view="cases" hidden>
-        <header class="section-hd"><h2>My Cases</h2></header>
-        <table class="table" role="table">
-          <thead><tr><th>Case</th><th>Status</th><th>Modified</th><th>Action</th></tr></thead>
-          <tbody>
-            <tr><td>BUS523159</td><td>Approved</td><td>08/18</td><td><a class="btn btn--ghost" href="#/app-success">Open</a></td></tr>
-            <tr><td>QTE992341</td><td>In Progress</td><td>08/17</td><td><a class="btn btn--ghost" href="#/start">Resume</a></td></tr>
-          </tbody>
-        </table>
-      </section>
+      </form>
     </main>
   </div>
-
-  <footer class="footer">© <span id="year"></span> DAWGCHECK Trainer</footer>
-
-  <script src="app.js?v=11" type="module" defer></script>
+  <footer class="footer">© <span id="year"></span> Mutual of Omaha App Replica</footer>
+  <script src="app.js?v=12"></script>
 </body>
 </html>
