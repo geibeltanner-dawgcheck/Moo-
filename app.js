@@ -1,6 +1,16 @@
-# /app.js
-const $ = (s, el=document) => el.querySelector(s);
-const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+// app.js
+// DAWGCHECK Trainer — Final polished 1:1 replica
+// - Dynamic product dropdown
+// - Live quoting with realistic latency and riders
+// - Autosave / restore
+// - Stepper navigation, validation, accessibility touches
+// - PWA friendly (works with manifest + service worker)
+
+// NOTE: This file is intended as a drop-in replacement for /app.js in the repo.
+// Make sure assets/icons/ and assets/city.jpg exist in your repo (see README.md).
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const stateKey = "dc-form";
 const STEP_TITLES = [
   "Producer Information","Proposed Insured","Confirm Identity – Proposed Insured",
@@ -11,11 +21,36 @@ const STEP_TITLES = [
   "Welcome Consent – Producer","Apply eSignature – Producer"
 ];
 
-/* Build step nav */
+// --- PRODUCT MATRIX (expandable) ---
+const PRODUCT_MATRIX = {
+  "Nebraska|Term Life": [
+    { carrier: "Mutual of Omaha", product: "Term Life Answers - Full Application", base: 0.85 },
+    { carrier: "Mutual of Omaha", product: "Term Life Answers - Speed eTicket", base: 0.9 },
+    { carrier: "Mutual of Omaha", product: "Term Life Express Point of Sale Decision", base: 1.2 }
+  ],
+  "Nebraska|Final Expense": [
+    { carrier: "Mutual of Omaha", product: "Living Promise Level", base: 1.1 },
+    { carrier: "Mutual of Omaha", product: "Living Promise Graded", base: 1.4 }
+  ],
+  "Nebraska|IUL": [
+    { carrier: "Mutual of Omaha", product: "Indexed Universal Life", base: 1.05 }
+  ],
+  "California|Term Life": [
+    { carrier: "Mutual of Omaha", product: "Term Life Answers - Full Application", base: 0.89 }
+  ],
+  "California|IUL": [
+    { carrier: "Mutual of Omaha", product: "Indexed Universal Life", base: 1.0 }
+  ],
+  "Texas|Term Life": [
+    { carrier: "Mutual of Omaha", product: "Term Life Answers - Full Application", base: 0.87 }
+  ]
+};
+
+// Build step nav
 (function buildStepNav(){
   const list = $('#step-list'); if(!list) return;
   list.innerHTML = STEP_TITLES.map((t,i)=>`
-    <li data-step="${i+1}" id="step-nav-${i+1}">
+    <li data-step="${i+1}" id="step-nav-${i+1}" tabindex="0" role="button" aria-pressed="false">
       <span class="step-dot">${i+1}</span><span>${t}</span>
     </li>
   `).join('');
@@ -24,9 +59,12 @@ const STEP_TITLES = [
     const step = li.getAttribute('data-step');
     to(`app-${step}`);
   });
+  list.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' || e.key === ' ') { const li = e.target.closest('li[data-step]'); if(!li) return; to(`app-${li.dataset.step}`); }
+  });
 })();
 
-/* Router */
+// Router & stepper
 function setAppChrome(isApp){
   const tabs = $$('.tabs .tab');
   if(tabs.length===2){
@@ -45,22 +83,23 @@ function markStep(view){
     li.classList.toggle('is-done', i+1<idx);
     const dot = $('.step-dot', li);
     dot.textContent = (i+1<idx) ? '✓' : String(i+1);
+    li.setAttribute('aria-pressed', i+1===idx ? 'true' : 'false');
   });
 }
 function to(view){
   const target = $(`[data-view="${view}"]`) ? view : "home";
   $$('.view').forEach(v=>{
     const active = v.dataset.view===target;
-    v.hidden=!active; v.classList.toggle('view--active', active);
+    v.hidden = !active; v.classList.toggle('view--active', active);
   });
   const isApp = /^app-/.test(target);
   setAppChrome(isApp);
   markStep(target);
-  location.hash = `/${target}`;
+  history.replaceState(null, '', `#/${target}`);
   $('#router')?.focus();
 }
 
-/* Login */
+// Login
 $('#btn-login')?.addEventListener('click', ()=>{
   const fn = $('#login-first').value.trim();
   const ln = $('#login-last').value.trim();
@@ -76,25 +115,26 @@ try{
   if(u){ $('.welcome span').textContent=`Welcome ${u.first} ${u.last}`; $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); to('home'); }
 }catch{}
 
-/* Orientation guard */
+// Orientation guard
 (function(){
   const guard = $('#orientation-guard');
   const update = () => { const portrait = matchMedia('(orientation:portrait)').matches; const narrow = innerWidth < 900; guard.hidden = !(portrait && narrow); };
   update(); addEventListener('resize', update); addEventListener('orientationchange', update);
 })();
 
-/* PWA */
+// PWA service worker registration
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js').catch(()=>{}); }
 
-/* Masks + helpers */
-const onlyDigits = (v,max) => (v.replace(/\D+/g,'').slice(0,max ?? 999));
+// Helpers & input masks
+const onlyDigits = (v,max) => (v ? v.replace(/\D+/g,'').slice(0,max ?? 999) : '');
 const maskSSN = v => { const d=onlyDigits(v,9); const a=d.slice(0,3), b=d.slice(3,5), c=d.slice(5,9); return [a,b,c].filter(Boolean).join('-'); };
 const isABA = v => { const d=onlyDigits(v,9); if(d.length!==9) return false; const n=[...d].map(Number); const sum=3*(n[0]+n[3]+n[6])+7*(n[1]+n[4]+n[7])+(n[2]+n[5]+n[8]); return sum%10===0; };
-const maskCurrency = v => { const d = v.replace(/[^\d.]/g,''); const [i,f=''] = d.split('.'); const I = (i||'0').replace(/^0+(?=\d)/,'') || '0'; const F = (f+'00').slice(0,2); return `$${I}.${F}`; };
+const maskCurrency = v => { const d = (v||'').replace(/[^\d.]/g,''); const [i,f=''] = d.split('.'); const I = (i||'0').replace(/^0+(?=\d)/,'') || '0'; const F = (f+'00').slice(0,2); return `$${I}.${F}`; };
 const maskPhone = v => { const d=onlyDigits(v,10); if(d.length<=3) return d; if(d.length<=6) return `(${d.slice(0,3)}) ${d.slice(3)}`; return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,10)}`; };
 
-/* DOB -> Age */
+// DOB -> Age wiring
 function calcAge(val){
+  if(!val) return '';
   const m=val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/); if(!m) return '';
   let [_,MM,DD,YYYY]=m; MM=+MM; DD=+DD; YYYY=+YYYY; if(YYYY<100) YYYY+=2000;
   const b=new Date(YYYY,MM-1,DD); if(isNaN(+b)) return '';
@@ -105,19 +145,88 @@ function calcAge(val){
 function wireDOBtoAge(){
   $$('.dob').forEach(dob=>{
     const age = dob.closest('.form-grid,.fs,.view')?.querySelector('.age'); if(!age) return;
-    dob.addEventListener('input', e=>{ age.value = calcAge(e.target.value.trim()); autosave(); });
+    dob.addEventListener('input', e=>{ age.value = calcAge(e.target.value.trim()); autosave(); calculatePremium(); });
   });
 }
 wireDOBtoAge();
 
-/* Autosave */
+// Dynamic product dropdown
+function updateProductDropdown() {
+  const state = $('#state')?.value;
+  const type = $('#ptype')?.value;
+  const select = $('#product');
+  if (!select) return;
+  const key = `${state}|${type}`;
+  select.innerHTML = '<option value="">Select a product…</option>';
+  (PRODUCT_MATRIX[key] || []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.product;
+    opt.textContent = `${p.carrier} – ${p.product}`;
+    select.appendChild(opt);
+  });
+  // try to keep previous selection if exists
+  const saved = JSON.parse(localStorage.getItem(stateKey)||'{}');
+  if(saved.product){
+    const choose = Array.from(select.options).find(o=>o.value === saved.product);
+    if(choose) select.value = saved.product;
+  }
+  autosave();
+}
+$('#state')?.addEventListener('change', updateProductDropdown);
+$('#ptype')?.addEventListener('change', updateProductDropdown);
+window.addEventListener('hashchange', ()=>{ updateProductDropdown(); });
+
+// Live quoting
+function getCoverageValue(){
+  const raw = ($('#coverage')?.value || $('#plan-coverage')?.value || '').toString();
+  return parseInt(raw.replace(/[^\d]/g,'')) || 0;
+}
+function calculatePremium() {
+  const state = $('#state')?.value;
+  const type = $('#ptype')?.value;
+  const productName = $('#product')?.value;
+  const dob = $('#dob')?.value || $('#pi-dob')?.value;
+  const coverage = getCoverageValue();
+  const premField = $('#prem-mo');
+  if(!premField) return;
+  if(!state || !type || !productName || !coverage || !dob) { premField.value = ""; premField.classList.remove('ready'); premField.classList.remove('loading'); return; }
+  premField.classList.add('loading');
+  setTimeout(() => {
+    const age = parseInt(calcAge(dob)) || 45;
+    const key = `${state}|${type}`;
+    const product = (PRODUCT_MATRIX[key]||[]).find(p=>p.product === productName);
+    let rate = product?.base || 1.0;
+    if (age > 65) rate *= 1.7;
+    else if (age > 60) rate *= 1.5;
+    else if (age >= 50) rate *= 1.15;
+    if (age < 40) rate *= 0.85;
+    if ($('#rider-waiver')?.value === "Yes") rate *= 1.08;
+    if ($('#rider-adb')?.value === "Yes") rate *= 1.06;
+    const monthly = ((coverage / 1000) * rate).toFixed(2);
+    premField.value = `$${monthly}`;
+    premField.classList.remove('loading');
+    premField.classList.add('ready');
+    setTimeout(()=>premField.classList.remove('ready'), 700);
+    autosave();
+  }, 420);
+}
+['state','ptype','product','dob','coverage','plan-coverage','pi-dob','rider-waiver','rider-adb'].forEach(id=>{
+  const el = $('#'+id);
+  if(!el) return;
+  el.addEventListener('change', calculatePremium);
+  el.addEventListener('input', calculatePremium);
+});
+$('#prem-mo')?.setAttribute('readonly', true);
+
+// Autosave & restore
 let saveTimer;
 function autosave(){
   clearTimeout(saveTimer);
-  $('#save-status').textContent='Saving…';
+  const status = $('#save-status');
+  if(status) status.textContent='Saving…';
   saveTimer=setTimeout(()=>{
-    try{ localStorage.setItem(stateKey, JSON.stringify(collectForm())); $('#save-status').textContent='Saved'; }
-    catch{ $('#save-status').textContent='Save failed'; }
+    try{ localStorage.setItem(stateKey, JSON.stringify(collectForm())); if(status) status.textContent='Saved'; }
+    catch{ if(status) status.textContent='Save failed'; }
   }, 300);
 }
 function collectForm(){
@@ -138,14 +247,15 @@ function restoreForm(){
       if(el.type==='checkbox'||el.type==='radio') el.checked = !!v;
       else if(el.type!=='file') el.value = v;
     });
-    // recompute ages
     $$('.dob').forEach(dob=>{ const age = dob.closest('.form-grid,.fs,.view')?.querySelector('.age'); if(age) age.value = calcAge(dob.value||''); });
     updateBeneTotals(); renderEmailList();
+    updateProductDropdown();
+    calculatePremium();
   }catch{}
 }
 restoreForm();
 
-/* Input wiring */
+// Input wiring
 document.body.addEventListener('input', (e)=>{
   const t = e.target;
   if(!(t instanceof HTMLElement)) return;
@@ -158,16 +268,15 @@ document.body.addEventListener('input', (e)=>{
   autosave();
 });
 
-/* Hash router */
-window.addEventListener('hashchange', ()=>{ const target = location.hash.replace('#/','') || 'home'; to(target); });
-if(!location.hash) to('login'); else to(location.hash.replace('#/',''));
+// Hash router (ensure product list updated when user navigates back)
+window.addEventListener('hashchange', ()=>{ const target = location.hash.replace('#/','') || 'home'; to(target); updateProductDropdown(); });
 
-/* Beneficiaries */
+// Beneficiaries
 const beneBody = $('#bene-body');
 function beneRow(id, name='', rel='', type='Primary', pct=''){
   return `<tr data-id="${id}">
-    <td><input id="bene-name-${id}" class="input" value="${name}"/></td>
-    <td><input id="bene-rel-${id}" class="input" value="${rel}"/></td>
+    <td><input id="bene-name-${id}" class="input" value="${name}" /></td>
+    <td><input id="bene-rel-${id}" class="input" value="${rel}" /></td>
     <td><select id="bene-type-${id}" class="select"><option ${type==='Primary'?'selected':''}>Primary</option><option ${type==='Contingent'?'selected':''}>Contingent</option></select></td>
     <td style="max-width:110px"><input id="bene-pct-${id}" class="input" inputmode="numeric" value="${pct}" /></td>
     <td><button class="btn btn--ghost bene-del" type="button">Remove</button></td>
@@ -191,9 +300,9 @@ beneBody?.addEventListener('input', (e)=>{
   if(e.target.id.startsWith('bene-pct-')) updateBeneTotals();
 });
 
-/* Validation (step 14) */
+// Validation (step 14)
 const requiredIds = [
-  'firstName','lastName','dob','gender','coverage','state','ptype',
+  'firstName','lastName','dob','gender','coverage','state','ptype','product',
   'pi-first','pi-last','pi-dob','pi-gender','pi-ssn'
 ];
 $('#btn-validate')?.addEventListener('click', ()=>{
@@ -215,7 +324,7 @@ $('#btn-validate')?.addEventListener('click', ()=>{
   list.innerHTML = errs.length? errs.map(e=>`<li>${e}</li>`).join('') : '<li>All required items complete.</li>';
 });
 
-/* Email list (step 16) */
+// Email list (step 16)
 function renderEmailList(){
   const ul = $('#email-list'); if(!ul) return;
   const data = JSON.parse(localStorage.getItem(stateKey)||'{}');
@@ -236,20 +345,11 @@ $('#email-add-btn')?.addEventListener('click', ()=>{
   localStorage.setItem(stateKey, JSON.stringify(d)); box.value=''; renderEmailList();
 });
 
-/* Footer year */
-$('#year').textContent = new Date().getFullYear();
-
-# /manifest.json
-{
-  "name": "DAWGCHECK Trainer",
-  "short_name": "DAWGCHECK",
-  "start_url": "./",
-  "display": "standalone",
-  "orientation": "landscape",
-  "background_color": "#f3f5f7",
-  "theme_color": "#2b99ca",
-  "icons": [
-    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+// Admin helper: reset trainer (exposed globally)
+function resetTrainer(){
+  if(confirm('Reset all trainer data? This will clear local storage and reload.')){ localStorage.clear(); location.reload(); }
 }
+window.resetTrainer = resetTrainer;
+
+// Footer year
+$('#year').textContent = new Date().getFullYear();
