@@ -5,18 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
   <meta name="theme-color" content="#2b99ca"/>
   <title>DAWGCHECK Trainer</title>
+
   <link rel="manifest" href="manifest.json"/>
   <link rel="icon" href="assets/icons/icon-192.png"/>
+  <link rel="apple-touch-icon" href="assets/icons/icon-512.png"/>
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+  <!-- Landscape-only guard -->
   <div id="orientation-guard" class="og" hidden>
-    <div class="og-card"><h2>Rotate device</h2><p>This trainer is landscape only.</p></div>
+    <div class="og-card">
+      <h2>Rotate device</h2>
+      <p>This trainer is landscape only.</p>
+    </div>
   </div>
 
+  <!-- Header -->
   <header class="topbar">
     <div class="brand">
-      <img src="assets/icons/icon-192.png" class="brand__logo" alt="">
+      <img src="assets/icons/icon-192.png" class="brand__logo" alt="DAWGCHECK logo">
       <div class="brand__text"><strong>DAWGCHECK</strong><span>Trainer</span></div>
     </div>
     <nav class="topnav">
@@ -26,6 +33,7 @@
     </nav>
   </header>
 
+  <!-- Action strip -->
   <section class="actions">
     <span class="btn btn--ghost">Case Notes</span>
     <span class="btn btn--ghost">View Forms</span>
@@ -33,11 +41,13 @@
     <span id="save-status" class="save-status">Ready</span>
   </section>
 
+  <!-- Case vs Application tabs -->
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" data-tab="case">Case Information</button>
     <button class="tab" data-tab="app">Application</button>
   </nav>
 
+  <!-- Router views -->
   <main id="router" tabindex="-1">
     <!-- HOME -->
     <section class="view view--active" data-view="home">
