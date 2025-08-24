@@ -18,6 +18,20 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
     const name = [first, last].filter(Boolean).join(' ') || 'User';
     const welcomeEl = $('#welcome-text');
     if (welcomeEl) welcomeEl.textContent = `Welcome ${name}`;
+    
+    // Auto-fill producer information from login
+    if (first || last) {
+      const prodFirst = $('#prod-first');
+      const prodLast = $('#prod-last');
+      const gaName = $('#ga-name');
+      
+      if (prodFirst && first) prodFirst.value = first;
+      if (prodLast && last) prodLast.value = last;
+      if (gaName && (first || last)) {
+        gaName.value = `DAWGCHECK Partners - ${name}`;
+      }
+    }
+    
     // Show app
     if (loginView) loginView.hidden = true;
     if (appView) appView.hidden = false;
@@ -107,6 +121,15 @@ document.addEventListener('input', (e)=>{
     if (v.length>4) v = `${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;
     else if (v.length>2) v = `${v.slice(0,2)}/${v.slice(2)}`;
     t.value = v;
+    
+    // Auto-calculate age if DOB field has an associated age field
+    if (v.length === 10) { // Complete date MM/DD/YYYY
+      const age = calcAgeFromDOB(v);
+      if (age && t.id === 'pi-dob') {
+        const ageEl = $('#pi-age'); 
+        if (ageEl) ageEl.value = age;
+      }
+    }
   }
 });
 
@@ -175,6 +198,20 @@ function updateCaseHeader(){
 }
 document.addEventListener('input', (e)=>{
   if (['pi-first','pi-last','plan-select','pi-state','pi-gender','face-amount'].includes(e.target.id)) updateCaseHeader();
+  
+  // Auto-fill General Agent Name when producer name is entered
+  if (['prod-first','prod-last'].includes(e.target.id)) {
+    const firstName = $('#prod-first')?.value || '';
+    const lastName = $('#prod-last')?.value || '';
+    const gaName = $('#ga-name');
+    
+    if (gaName && (firstName.trim() || lastName.trim())) {
+      const fullName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+      if (fullName) {
+        gaName.value = `DAWGCHECK Partners - ${fullName}`;
+      }
+    }
+  }
 });
 
 /* ---------- Field Logic ---------- */

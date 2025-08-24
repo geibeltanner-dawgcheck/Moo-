@@ -26,8 +26,16 @@ $('#btn-login')?.addEventListener('click', ()=>{
   const ln = $('#login-last').value.trim();
   if(!fn||!ln){ alert('Enter first and last name'); return; }
   localStorage.setItem('dc-user', JSON.stringify({first:fn,last:ln}));
-  $('#prod-first')?.setAttribute('placeholder', `${fn}`);
-  $('#prod-last')?.setAttribute('placeholder', `${ln}`);
+  
+  // Auto-fill producer information
+  const prodFirst = $('#prod-first');
+  const prodLast = $('#prod-last');
+  const gaName = $('#ga-name');
+  
+  if (prodFirst) prodFirst.value = fn;
+  if (prodLast) prodLast.value = ln;
+  if (gaName) gaName.value = `DAWGCHECK Partners - ${fn} ${ln}`;
+  
   $('.welcome').textContent = `Welcome ${fn} ${ln}`;
   to('home');
 });
@@ -38,9 +46,17 @@ function checkLoginStatus(){
   try{ 
     const u = JSON.parse(localStorage.getItem('dc-user')||'null'); 
     if(u){ 
-      $('.welcome').textContent = `Welcome ${u.first} ${u.last}`; 
-      $('#prod-first')?.setAttribute('placeholder', u.first); 
-      $('#prod-last')?.setAttribute('placeholder', u.last); 
+      $('.welcome').textContent = `Welcome ${u.first} ${u.last}`;
+      
+      // Auto-fill producer information for returning users
+      const prodFirst = $('#prod-first');
+      const prodLast = $('#prod-last');
+      const gaName = $('#ga-name');
+      
+      if (prodFirst) prodFirst.value = u.first;
+      if (prodLast) prodLast.value = u.last;
+      if (gaName) gaName.value = `DAWGCHECK Partners - ${u.first} ${u.last}`;
+      
       return true;
     } 
   }catch{}
