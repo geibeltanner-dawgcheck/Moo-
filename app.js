@@ -1,355 +1,483 @@
-// app.js
-// DAWGCHECK Trainer — Final polished 1:1 replica
-// - Dynamic product dropdown
-// - Live quoting with realistic latency and riders
-// - Autosave / restore
-// - Stepper navigation, validation, accessibility touches
-// - PWA friendly (works with manifest + service worker)
-
-// NOTE: This file is intended as a drop-in replacement for /app.js in the repo.
-// Make sure assets/icons/ and assets/city.jpg exist in your repo (see README.md).
+/* DAWGCHECK Training Simulator – Full Replica Flow
+   Rewritten end-to-end to mirror the real application flow and screens.
+*/
 
 const $ = (s, el = document) => el.querySelector(s);
-const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const stateKey = "dc-form";
-const STEP_TITLES = [
-  "Producer Information","Proposed Insured","Confirm Identity – Proposed Insured",
-  "HIPAA Signature and Lock Data","HIPAA Signature Method","Proposed Insured Cont’d",
-  "Insurance History","Plan Information","Pre-Approval Information","Underwriting",
-  "Beneficiaries","Premium Summary","Automatic Bill Pay","Validate and Lock Data",
-  "Attachments","Post Submission Email Setup","Signature Method","Producer Statement",
-  "Welcome Consent – Producer","Apply eSignature – Producer"
-];
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 
-// --- PRODUCT MATRIX (expandable) ---
-const PRODUCT_MATRIX = {
-  "Nebraska|Term Life": [
-    { carrier: "Mutual of Omaha", product: "Term Life Answers - Full Application", base: 0.85 },
-    { carrier: "Mutual of Omaha", product: "Term Life Answers - Speed eTicket", base: 0.9 },
-    { carrier: "Mutual of Omaha", product: "Term Life Express Point of Sale Decision", base: 1.2 }
+/* ---------- State ---------- */
+const state = {
+  stepOrder: [
+    'producer','insured','confirm-id','hipaa-lock','hipaa-method',
+    'insured-continued','history','plan','pre-approval','underwriting',
+    'beneficiaries','premium','billing','validate-lock','attachments',
+    'post-email','signature-method','producer-statement','welcome-consent',
+    'apply-esign-producer'
   ],
-  "Nebraska|Final Expense": [
-    { carrier: "Mutual of Omaha", product: "Living Promise Level", base: 1.1 },
-    { carrier: "Mutual of Omaha", product: "Living Promise Graded", base: 1.4 }
-  ],
-  "Nebraska|IUL": [
-    { carrier: "Mutual of Omaha", product: "Indexed Universal Life", base: 1.05 }
-  ],
-  "California|Term Life": [
-    { carrier: "Mutual of Omaha", product: "Term Life Answers - Full Application", base: 0.89 }
-  ],
-  "California|IUL": [
-    { carrier: "Mutual of Omaha", product: "Indexed Universal Life", base: 1.0 }
-  ],
-  "Texas|Term Life": [
-    { carrier: "Mutual of Omaha", product: "Term Life Answers - Full Application", base: 0.87 }
-  ]
+  currentIndex: 0,
+  locked: {
+    hipaa: false,
+    app: false
+  },
+  uwComplete: false,
+  signatures: {
+    hipaaSent: false,
+    appSent: false
+  },
+  beneficiaries: [],
+  files: [],
+  premium: {
+    annual: 0, semi: 0, quarter: 0, month: 0
+  }
 };
 
-// Build step nav
-(function buildStepNav(){
-  const list = $('#step-list'); if(!list) return;
-  list.innerHTML = STEP_TITLES.map((t,i)=>`
-    <li data-step="${i+1}" id="step-nav-${i+1}" tabindex="0" role="button" aria-pressed="false">
-      <span class="step-dot">${i+1}</span><span>${t}</span>
-    </li>
-  `).join('');
-  list.addEventListener('click', e=>{
-    const li = e.target.closest('li[data-step]'); if(!li) return;
-    const step = li.getAttribute('data-step');
-    to(`app-${step}`);
-  });
-  list.addEventListener('keydown', e=>{
-    if(e.key === 'Enter' || e.key === ' ') { const li = e.target.closest('li[data-step]'); if(!li) return; to(`app-${li.dataset.step}`); }
-  });
-})();
-
-// Router & stepper
-function setAppChrome(isApp){
-  const tabs = $$('.tabs .tab');
-  if(tabs.length===2){
-    tabs[0].style.background = isApp ? '#cfe6f4' : '#fff';
-    tabs[0].style.borderBottom = isApp ? '0' : '3px solid var(--blue-800)';
-    tabs[1].style.background = isApp ? '#fff' : '#cfe6f4';
-    tabs[1].style.borderBottom = isApp ? '3px solid var(--blue-800)' : '0';
-  }
-  $('#step-nav').hidden = !isApp;
+/* ---------- Helpers ---------- */
+const STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS","MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV","WY"
+];
+function fillStateSelect(sel){
+  sel.innerHTML = '<option value="">Please select…</option>' + STATES.map(s=>`<option value="${s}">${s}</option>`).join('');
 }
-function markStep(view){
-  const m = view.match(/^app-(\d{1,2})$/); if(!m) { $$('#step-list li').forEach(li=>li.classList.remove('is-active','is-done')); return; }
-  const idx = +m[1];
-  $$('#step-list li').forEach((li,i)=>{
-    li.classList.toggle('is-active', i+1===idx);
-    li.classList.toggle('is-done', i+1<idx);
-    const dot = $('.step-dot', li);
-    dot.textContent = (i+1<idx) ? '✓' : String(i+1);
-    li.setAttribute('aria-pressed', i+1===idx ? 'true' : 'false');
-  });
-}
-function to(view){
-  const target = $(`[data-view="${view}"]`) ? view : "home";
-  $$('.view').forEach(v=>{
-    const active = v.dataset.view===target;
-    v.hidden = !active; v.classList.toggle('view--active', active);
-  });
-  const isApp = /^app-/.test(target);
-  setAppChrome(isApp);
-  markStep(target);
-  history.replaceState(null, '', `#/${target}`);
-  $('#router')?.focus();
-}
-
-// Login
-$('#btn-login')?.addEventListener('click', ()=>{
-  const fn = $('#login-first').value.trim();
-  const ln = $('#login-last').value.trim();
-  if(!fn||!ln){ alert('Enter first and last name'); return; }
-  localStorage.setItem('dc-user', JSON.stringify({first:fn,last:ln}));
-  $('.welcome span').textContent = `Welcome ${fn} ${ln}`;
-  $('#prod-name')?.setAttribute('placeholder', `${fn} ${ln}`);
-  to('home');
+['#prod-state','#pi-state','#pre-state','#signed-state'].forEach(id=>{
+  const el = $(id);
+  if (el) fillStateSelect(el);
 });
-$('#btn-logout')?.addEventListener('click', ()=>{ localStorage.removeItem('dc-user'); to('login'); });
-try{
-  const u = JSON.parse(localStorage.getItem('dc-user')||'null');
-  if(u){ $('.welcome span').textContent=`Welcome ${u.first} ${u.last}`; $('#prod-name')?.setAttribute('placeholder', `${u.first} ${u.last}`); to('home'); }
-}catch{}
+$('#year').textContent = new Date().getFullYear();
 
-// Orientation guard
-(function(){
-  const guard = $('#orientation-guard');
-  const update = () => { const portrait = matchMedia('(orientation:portrait)').matches; const narrow = innerWidth < 900; guard.hidden = !(portrait && narrow); };
-  update(); addEventListener('resize', update); addEventListener('orientationchange', update);
-})();
+function money(n){ return `$${(n||0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}`; }
+function parseMoney(s){ return parseFloat(String(s||'').replace(/[^\d.]/g,''))||0; }
+function calcAgeFromDOB(dob){
+  const m = String(dob||'').match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(!m) return '';
+  let [_,MM,DD,YYYY] = m; MM=+MM; DD=+DD; YYYY=+YYYY; if(YYYY<100) YYYY+=2000;
+  const b = new Date(YYYY,MM-1,DD); if(isNaN(b)) return '';
+  const t = new Date();
+  let age = t.getFullYear()-b.getFullYear();
+  if (t.getMonth()<b.getMonth() || (t.getMonth()===b.getMonth() && t.getDate()<b.getDate())) age--;
+  return age>=0?String(age):'';
+}
 
-// PWA service worker registration
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js').catch(()=>{}); }
-
-// Helpers & input masks
-const onlyDigits = (v,max) => (v ? v.replace(/\D+/g,'').slice(0,max ?? 999) : '');
-const maskSSN = v => { const d=onlyDigits(v,9); const a=d.slice(0,3), b=d.slice(3,5), c=d.slice(5,9); return [a,b,c].filter(Boolean).join('-'); };
-const isABA = v => { const d=onlyDigits(v,9); if(d.length!==9) return false; const n=[...d].map(Number); const sum=3*(n[0]+n[3]+n[6])+7*(n[1]+n[4]+n[7])+(n[2]+n[5]+n[8]); return sum%10===0; };
-const maskCurrency = v => { const d = (v||'').replace(/[^\d.]/g,''); const [i,f=''] = d.split('.'); const I = (i||'0').replace(/^0+(?=\d)/,'') || '0'; const F = (f+'00').slice(0,2); return `$${I}.${F}`; };
-const maskPhone = v => { const d=onlyDigits(v,10); if(d.length<=3) return d; if(d.length<=6) return `(${d.slice(0,3)}) ${d.slice(3)}`; return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,10)}`; };
-
-// DOB -> Age wiring
-function calcAge(val){
-  if(!val) return '';
-  const m=val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/); if(!m) return '';
-  let [_,MM,DD,YYYY]=m; MM=+MM; DD=+DD; YYYY=+YYYY; if(YYYY<100) YYYY+=2000;
-  const b=new Date(YYYY,MM-1,DD); if(isNaN(+b)) return '';
-  const t=new Date(); let age=t.getFullYear()-b.getFullYear();
-  const md=t.getMonth()-b.getMonth(); if(md<0||(md===0&&t.getDate()<b.getDate())) age--;
-  return age>0?String(age):'';
-}
-function wireDOBtoAge(){
-  $$('.dob').forEach(dob=>{
-    const age = dob.closest('.form-grid,.fs,.view')?.querySelector('.age'); if(!age) return;
-    dob.addEventListener('input', e=>{ age.value = calcAge(e.target.value.trim()); autosave(); calculatePremium(); });
-  });
-}
-wireDOBtoAge();
-
-// Dynamic product dropdown
-function updateProductDropdown() {
-  const state = $('#state')?.value;
-  const type = $('#ptype')?.value;
-  const select = $('#product');
-  if (!select) return;
-  const key = `${state}|${type}`;
-  select.innerHTML = '<option value="">Select a product…</option>';
-  (PRODUCT_MATRIX[key] || []).forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.product;
-    opt.textContent = `${p.carrier} – ${p.product}`;
-    select.appendChild(opt);
-  });
-  // try to keep previous selection if exists
-  const saved = JSON.parse(localStorage.getItem(stateKey)||'{}');
-  if(saved.product){
-    const choose = Array.from(select.options).find(o=>o.value === saved.product);
-    if(choose) select.value = saved.product;
-  }
-  autosave();
-}
-$('#state')?.addEventListener('change', updateProductDropdown);
-$('#ptype')?.addEventListener('change', updateProductDropdown);
-window.addEventListener('hashchange', ()=>{ updateProductDropdown(); });
-
-// Live quoting
-function getCoverageValue(){
-  const raw = ($('#coverage')?.value || $('#plan-coverage')?.value || '').toString();
-  return parseInt(raw.replace(/[^\d]/g,'')) || 0;
-}
-function calculatePremium() {
-  const state = $('#state')?.value;
-  const type = $('#ptype')?.value;
-  const productName = $('#product')?.value;
-  const dob = $('#dob')?.value || $('#pi-dob')?.value;
-  const coverage = getCoverageValue();
-  const premField = $('#prem-mo');
-  if(!premField) return;
-  if(!state || !type || !productName || !coverage || !dob) { premField.value = ""; premField.classList.remove('ready'); premField.classList.remove('loading'); return; }
-  premField.classList.add('loading');
-  setTimeout(() => {
-    const age = parseInt(calcAge(dob)) || 45;
-    const key = `${state}|${type}`;
-    const product = (PRODUCT_MATRIX[key]||[]).find(p=>p.product === productName);
-    let rate = product?.base || 1.0;
-    if (age > 65) rate *= 1.7;
-    else if (age > 60) rate *= 1.5;
-    else if (age >= 50) rate *= 1.15;
-    if (age < 40) rate *= 0.85;
-    if ($('#rider-waiver')?.value === "Yes") rate *= 1.08;
-    if ($('#rider-adb')?.value === "Yes") rate *= 1.06;
-    const monthly = ((coverage / 1000) * rate).toFixed(2);
-    premField.value = `$${monthly}`;
-    premField.classList.remove('loading');
-    premField.classList.add('ready');
-    setTimeout(()=>premField.classList.remove('ready'), 700);
-    autosave();
-  }, 420);
-}
-['state','ptype','product','dob','coverage','plan-coverage','pi-dob','rider-waiver','rider-adb'].forEach(id=>{
-  const el = $('#'+id);
-  if(!el) return;
-  el.addEventListener('change', calculatePremium);
-  el.addEventListener('input', calculatePremium);
-});
-$('#prem-mo')?.setAttribute('readonly', true);
-
-// Autosave & restore
-let saveTimer;
-function autosave(){
-  clearTimeout(saveTimer);
-  const status = $('#save-status');
-  if(status) status.textContent='Saving…';
-  saveTimer=setTimeout(()=>{
-    try{ localStorage.setItem(stateKey, JSON.stringify(collectForm())); if(status) status.textContent='Saved'; }
-    catch{ if(status) status.textContent='Save failed'; }
-  }, 300);
-}
-function collectForm(){
-  const data = {};
-  $$('input,select,textarea').forEach(el=>{
-    if(!el.id) return;
-    if(el.type==='file'){ data[el.id] = [...el.files].map(f=>f.name); }
-    else if(el.type==='checkbox' || el.type==='radio'){ data[el.id] = el.checked; }
-    else { data[el.id] = el.value; }
-  });
-  return data;
-}
-function restoreForm(){
-  try{
-    const d = JSON.parse(localStorage.getItem(stateKey)||'{}');
-    Object.entries(d).forEach(([id,v])=>{
-      const el = $('#'+id); if(!el) return;
-      if(el.type==='checkbox'||el.type==='radio') el.checked = !!v;
-      else if(el.type!=='file') el.value = v;
-    });
-    $$('.dob').forEach(dob=>{ const age = dob.closest('.form-grid,.fs,.view')?.querySelector('.age'); if(age) age.value = calcAge(dob.value||''); });
-    updateBeneTotals(); renderEmailList();
-    updateProductDropdown();
-    calculatePremium();
-  }catch{}
-}
-restoreForm();
-
-// Input wiring
-document.body.addEventListener('input', (e)=>{
+/* Masks */
+document.addEventListener('input', (e)=>{
   const t = e.target;
-  if(!(t instanceof HTMLElement)) return;
-  if(t.classList.contains('ssn')) t.value = maskSSN(t.value);
-  if(t.classList.contains('money')) t.value = maskCurrency(t.value);
-  if(t.classList.contains('routing')){ t.value = onlyDigits(t.value,9); t.classList.toggle('error', !!t.value && !isABA(t.value)); }
-  if(t.classList.contains('account')){ t.value = onlyDigits(t.value,17); t.classList.toggle('error', !!t.value && (t.value.length<4 || t.value.length>17)); }
-  if(t.classList.contains('phone')) t.value = maskPhone(t.value);
-  if(t.classList.contains('zip')) t.value = onlyDigits(t.value,5);
-  autosave();
+  if(!(t instanceof HTMLInputElement)) return;
+
+  if (t.classList.contains('mask-ssn')) {
+    let v = t.value.replace(/\D/g,'').slice(0,9);
+    if (v.length>5) v = `${v.slice(0,3)}-${v.slice(3,5)}-${v.slice(5)}`;
+    else if (v.length>3) v = `${v.slice(0,3)}-${v.slice(3)}`;
+    t.value = v;
+  }
+  if (t.classList.contains('mask-phone')) {
+    let v = t.value.replace(/\D/g,'').slice(0,10);
+    if (v.length>6) v = `(${v.slice(0,3)}) ${v.slice(3,6)}-${v.slice(6)}`;
+    else if (v.length>3) v = `(${v.slice(0,3)}) ${v.slice(3)}`;
+    t.value = v;
+  }
+  if (t.classList.contains('mask-4pin')) {
+    t.value = t.value.replace(/\D/g,'').slice(0,4);
+  }
+  if (t.classList.contains('mask-routing')) {
+    t.value = t.value.replace(/\D/g,'').slice(0,9);
+  }
+  if (t.classList.contains('mask-account')) {
+    t.value = t.value.replace(/\D/g,'').slice(0,17);
+  }
+  if (t.classList.contains('mask-money')) {
+    let v = t.value.replace(/[^\d]/g,'');
+    if (v) v = `$${parseInt(v,10).toLocaleString()}`;
+    t.value = v;
+  }
+  if (t.classList.contains('mask-dob')) {
+    let v = t.value.replace(/\D/g,'').slice(0,8);
+    if (v.length>4) v = `${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;
+    else if (v.length>2) v = `${v.slice(0,2)}/${v.slice(2)}`;
+    t.value = v;
+  }
 });
 
-// Hash router (ensure product list updated when user navigates back)
-window.addEventListener('hashchange', ()=>{ const target = location.hash.replace('#/','') || 'home'; to(target); updateProductDropdown(); });
+/* ---------- Stepper Navigation ---------- */
+const stepper = $('#step-list');
+const stepViews = $$('.step-view');
+function indexOfStepKey(key){ return state.stepOrder.indexOf(key); }
+function stepKeyAt(i){ return state.stepOrder[i]; }
 
-// Beneficiaries
-const beneBody = $('#bene-body');
-function beneRow(id, name='', rel='', type='Primary', pct=''){
+function setActiveStep(i){
+  state.currentIndex = i;
+  // Sidebar
+  $$('.step', stepper).forEach((li, idx)=>{
+    li.classList.toggle('is-active', idx===i);
+    li.classList.toggle('is-done', idx<i);
+    li.setAttribute('aria-selected', String(idx===i));
+    li.tabIndex = idx===i ? 0 : -1;
+    const dot = $('.dot', li);
+    if (dot) dot.textContent = idx<i ? '✓' : String(idx+1);
+  });
+  // Views
+  stepViews.forEach(sec=>{
+    const show = sec.dataset.step === stepKeyAt(i);
+    sec.hidden = !show;
+  });
+  // Buttons
+  $('#btn-back').disabled = i===0;
+  $('#btn-next').textContent = (i === state.stepOrder.length-1) ? 'Finish' : 'Next ▸';
+}
+setActiveStep(0);
+
+stepper.addEventListener('click', (e)=>{
+  const li = e.target.closest('.step');
+  if(!li) return;
+  const idx = $$('.step', stepper).indexOf(li);
+  if (idx<=state.currentIndex && !li.classList.contains('is-locked')) {
+    setActiveStep(idx);
+  }
+});
+stepper.addEventListener('keydown', (e)=>{
+  if (!e.target.classList.contains('step')) return;
+  const steps = $$('.step', stepper);
+  const i = steps.indexOf(e.target);
+  if (e.key==='ArrowDown' && i<steps.length-1) { steps[i+1].focus(); e.preventDefault(); }
+  if (e.key==='ArrowUp' && i>0) { steps[i-1].focus(); e.preventDefault(); }
+  if ((e.key==='Enter'||e.key===' ') && i<=state.currentIndex) { setActiveStep(i); e.preventDefault(); }
+});
+
+/* ---------- Navigation Buttons ---------- */
+$('#btn-next').addEventListener('click', async ()=>{
+  if (!validateCurrentStep()) return;
+  const last = state.stepOrder.length-1;
+  if (state.currentIndex < last) {
+    setActiveStep(state.currentIndex+1);
+  } else {
+    $('#submit-messages').innerHTML = `<div class="alert success">All steps completed.</div>`;
+  }
+});
+$('#btn-back').addEventListener('click', ()=>{
+  if (state.currentIndex>0) setActiveStep(state.currentIndex-1);
+});
+
+/* ---------- Case Header dynamic ---------- */
+function updateCaseHeader(){
+  const client = `${$('#pi-first').value || '—'} ${$('#pi-last').value || ''}`.trim() || '—';
+  $('#case-client').textContent = `Client: ${client}`;
+  const plan = $('#plan-select').value || '—';
+  $('#case-product').textContent = `Product: ${plan}`;
+  $('#summary-plan').value = plan;
+  $('#summary-state').value = $('#pi-state').value || '';
+  $('#summary-age').value = $('#pi-age').value || '';
+  $('#summary-gender').value = $('#pi-gender').value || '';
+  $('#summary-face').value = $('#face-amount').value || '';
+}
+document.addEventListener('input', (e)=>{
+  if (['pi-first','pi-last','plan-select','pi-state','pi-gender','face-amount'].includes(e.target.id)) updateCaseHeader();
+});
+
+/* ---------- Field Logic ---------- */
+$('#pi-dob').addEventListener('input', e=>{
+  $('#pi-age').value = calcAgeFromDOB(e.target.value);
+  updateCaseHeader();
+});
+
+/* ---------- HIPAA Lock ---------- */
+$('#btn-lock-hipaa').addEventListener('click', ()=>{
+  state.locked.hipaa = true;
+  $('#hipaa-lock-msg').hidden = false;
+  $('#hipaa-unlocked-msg').hidden = true;
+  $('#btn-lock-hipaa').hidden = true;
+  $('#btn-unlock-hipaa').hidden = false;
+});
+$('#btn-unlock-hipaa').addEventListener('click', ()=>{
+  state.locked.hipaa = false;
+  $('#hipaa-lock-msg').hidden = true;
+  $('#hipaa-unlocked-msg').hidden = false;
+  $('#btn-lock-hipaa').hidden = false;
+  $('#btn-unlock-hipaa').hidden = true;
+});
+
+/* ---------- HIPAA Method Send ---------- */
+$('#btn-hipaa-send').addEventListener('click', ()=>{
+  const phone = $('#hipaa-phone').value.trim();
+  const pin = $('#hipaa-pin').value.trim();
+  if (!phone || pin.length!==4) {
+    $('#hipaa-send-status').textContent = 'Enter a valid phone and 4-digit PIN.';
+    return;
+  }
+  state.signatures.hipaaSent = true;
+  $('#hipaa-send-status').textContent = 'Text sent from 1‑844‑307‑6442 with link to sign.';
+});
+
+/* ---------- Policies Tables ---------- */
+function policyRow(id, carrier=false){
   return `<tr data-id="${id}">
-    <td><input id="bene-name-${id}" class="input" value="${name}" /></td>
-    <td><input id="bene-rel-${id}" class="input" value="${rel}" /></td>
-    <td><select id="bene-type-${id}" class="select"><option ${type==='Primary'?'selected':''}>Primary</option><option ${type==='Contingent'?'selected':''}>Contingent</option></select></td>
-    <td style="max-width:110px"><input id="bene-pct-${id}" class="input" inputmode="numeric" value="${pct}" /></td>
-    <td><button class="btn btn--ghost bene-del" type="button">Remove</button></td>
+    <td><input ${carrier?'value="DAWGCHECK Life"':''} /></td>
+    <td><input /></td>
+    <td><input class="mask-money" placeholder="$20,000" /></td>
+    <td>${carrier?'<select><option>Yes</option><option>No</option></select>':'<select><option>Life</option><option>Annuity</option></select>'}</td>
+    <td><button type="button" class="btn btn--ghost" data-remove>Remove</button></td>
   </tr>`;
 }
-function updateBeneTotals(){
+$('#btn-add-carrier-policy').addEventListener('click', ()=>{
+  $('#carrier-policies').insertAdjacentHTML('beforeend', policyRow(cryptoRandomId(), true));
+});
+$('#btn-add-other-policy').addEventListener('click', ()=>{
+  $('#other-policies').insertAdjacentHTML('beforeend', policyRow(cryptoRandomId(), false));
+});
+['carrier-policies','other-policies'].forEach(id=>{
+  $('#'+id).addEventListener('click', e=>{
+    if (e.target.matches('[data-remove]')) e.target.closest('tr').remove();
+  });
+});
+
+/* ---------- Beneficiaries ---------- */
+function renderBeneTable(){
+  const tbody = $('#bene-body');
+  tbody.innerHTML = '';
   let total = 0;
-  $$('[id^="bene-pct-"]').forEach(i=>{ const n = parseInt(onlyDigits(i.value,3)||'0',10); i.value = String(n); total += (isNaN(n)?0:n); });
-  const el = $('#bene-total'); if(el){ el.textContent = `Total: ${total}%`; el.style.color = (total===100?'#0a7b12':'#b00020'); }
-}
-$('#bene-add')?.addEventListener('click', ()=>{
-  const id = Math.random().toString(36).slice(2,8);
-  beneBody.insertAdjacentHTML('beforeend', beneRow(id));
-  autosave(); updateBeneTotals();
-});
-beneBody?.addEventListener('click', (e)=>{
-  const btn = e.target.closest('.bene-del'); if(!btn) return;
-  btn.closest('tr')?.remove(); autosave(); updateBeneTotals();
-});
-beneBody?.addEventListener('input', (e)=>{
-  if(e.target.id.startsWith('bene-pct-')) updateBeneTotals();
-});
-
-// Validation (step 14)
-const requiredIds = [
-  'firstName','lastName','dob','gender','coverage','state','ptype','product',
-  'pi-first','pi-last','pi-dob','pi-gender','pi-ssn'
-];
-$('#btn-validate')?.addEventListener('click', ()=>{
-  const errs = [];
-  requiredIds.forEach(id=>{
-    const el = $('#'+id);
-    if(!el) return;
-    const val = (el.type==='checkbox'||el.type==='radio') ? el.checked : (el.value||'').trim();
-    const bad = (el.type==='checkbox'||el.type==='radio') ? !val : val==='';
-    el.classList.toggle('error', bad);
-    if(bad) errs.push(`Missing: ${id}`);
+  state.beneficiaries.forEach(b=>{
+    total += Number(b.share||0);
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr data-id="${b.id}">
+        <td><input value="${b.name||''}" data-bene="name" /></td>
+        <td><input value="${b.rel||''}" data-bene="rel" /></td>
+        <td>
+          <select data-bene="type">
+            <option ${b.type==='Primary'?'selected':''}>Primary</option>
+            <option ${b.type==='Contingent'?'selected':''}>Contingent</option>
+          </select>
+        </td>
+        <td style="max-width:110px"><input inputmode="numeric" value="${b.share||''}" data-bene="share" /></td>
+        <td><button type="button" class="btn btn--ghost" data-remove>Remove</button></td>
+      </tr>`);
   });
-  if($('#routing') && $('#routing').value && !isABA($('#routing').value)) errs.push('Routing number invalid');
-  if($('#bene-body') && $('#bene-body').children.length>0){
-    const total = [...$$('[id^="bene-pct-"]')].reduce((a,i)=>a+(parseInt(i.value||'0',10)||0),0);
-    if(total!==100) errs.push('Beneficiaries must total 100%');
+  $('#bene-total').textContent = `Total: ${total}%`;
+  $('#bene-total').style.color = (total===100 && state.beneficiaries.some(b=>b.type==='Primary')) ? '#065f46' : '#b91c1c';
+}
+function cryptoRandomId(){ return Math.random().toString(36).slice(2,9); }
+$('#btn-add-bene').addEventListener('click', ()=>{
+  state.beneficiaries.push({id:cryptoRandomId(), name:'', rel:'', type:'Primary', share:''});
+  renderBeneTable();
+});
+$('#bene-body').addEventListener('click', e=>{
+  if (e.target.matches('[data-remove]')) {
+    const id = e.target.closest('tr').dataset.id;
+    state.beneficiaries = state.beneficiaries.filter(b=>b.id!==id);
+    renderBeneTable();
   }
-  const list = $('#val-errors');
-  list.innerHTML = errs.length? errs.map(e=>`<li>${e}</li>`).join('') : '<li>All required items complete.</li>';
+});
+$('#bene-body').addEventListener('input', e=>{
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const id = tr.dataset.id;
+  const key = e.target.dataset.bene;
+  const bene = state.beneficiaries.find(b=>b.id===id);
+  if (!bene) return;
+  bene[key] = e.target.value;
+  if (key==='share') bene.share = String(parseInt(e.target.value.replace(/\D/g,''))||'');
+  renderBeneTable();
 });
 
-// Email list (step 16)
-function renderEmailList(){
-  const ul = $('#email-list'); if(!ul) return;
-  const data = JSON.parse(localStorage.getItem(stateKey)||'{}');
-  const emails = (data._emails||[]); ul.innerHTML='';
-  emails.forEach((em,i)=>{
-    const li = document.createElement('li'); li.textContent = em + ' ';
-    const btn = document.createElement('button'); btn.className='btn btn--ghost'; btn.textContent='Remove';
-    btn.addEventListener('click', ()=>{
-      const d = JSON.parse(localStorage.getItem(stateKey)||'{}');
-      (d._emails||[]).splice(i,1); localStorage.setItem(stateKey, JSON.stringify(d)); renderEmailList();
-    });
-    li.appendChild(btn); ul.appendChild(li);
+/* ---------- Pre-Approval products ---------- */
+const PRODUCT_MATRIX = {
+  "AL|Term Life":[ "Term Life Answers – Full Application","Term Life Answers – Speed eTicket","Term Life Express Point of Sale Decision" ],
+  "CA|Indexed Universal Life":[ "Indexed Universal Life Express with Easy Solve" ],
+  "NE|Term Life":[ "Term Life Answers – Full Application","Term Life Express Point of Sale Decision" ],
+  "NE|Indexed Universal Life":[ "Indexed Universal Life Express with Easy Solve" ],
+};
+$('#btn-find-products').addEventListener('click', ()=>{
+  const s = $('#pre-state').value;
+  const t = $('#pre-product-type').value;
+  const list = PRODUCT_MATRIX[`${s}|${t}`] || [];
+  const sel = $('#pre-products');
+  sel.innerHTML = list.map(p=>`<option>${p}</option>`).join('') || '<option disabled>No products found</option>';
+});
+
+/* ---------- Health Assessment ---------- */
+$('#btn-health-assessment').addEventListener('click', ()=>{
+  $('#health-status').textContent = 'Assessment in progress…';
+  setTimeout(()=>{
+    state.uwComplete = true;
+    $('#uw-success').hidden = false;
+    $('#health-status').textContent = 'Responses submitted.';
+  }, 1200);
+});
+
+/* ---------- Premium Calculation ---------- */
+$('#btn-calc-premium').addEventListener('click', ()=>{
+  const face = parseMoney($('#face-amount').value || $('#summary-face').value);
+  const age = parseInt($('#pi-age').value||'45',10);
+  const tobacco = $('#summary-tobacco').value === 'Tobacco';
+  const baseRate = Math.max(0.75, Math.min(1.85, 0.9 + (age-35)*0.02 + (tobacco?0.25:0)));
+  const annual = (face/1000) * (baseRate*12*1.15); // load for expenses
+  const monthly = annual/12;
+  const semi = annual/2 * 1.02;
+  const quarter = annual/4 * 1.03;
+
+  state.premium = { annual, semi, quarter, month: monthly };
+  $('#prem-annual').textContent = money(annual);
+  $('#prem-semi').textContent = money(semi);
+  $('#prem-quarter').textContent = money(quarter);
+  $('#prem-month').textContent = money(monthly);
+});
+
+/* ---------- Validate & Lock (App) ---------- */
+$('#btn-lock-app').addEventListener('click', ()=>{
+  state.locked.app = true;
+  $('#lock-status').hidden = false;
+  $('#btn-lock-app').hidden = true;
+  $('#btn-unlock-app').hidden = false;
+  setFormEnabled(false);
+});
+$('#btn-unlock-app').addEventListener('click', ()=>{
+  state.locked.app = false;
+  $('#lock-status').hidden = true;
+  $('#btn-lock-app').hidden = false;
+  $('#btn-unlock-app').hidden = true;
+  setFormEnabled(true);
+});
+function setFormEnabled(enabled){
+  $$('#wizard input, #wizard select, #wizard textarea').forEach(el=>{
+    if (el.closest('[data-step="validate-lock"]')) return;
+    el.disabled = !enabled;
   });
 }
-$('#email-add-btn')?.addEventListener('click', ()=>{
-  const box = $('#email-add'); const v = (box.value||'').trim(); if(!v) return;
-  const d = JSON.parse(localStorage.getItem(stateKey)||'{}'); d._emails = d._emails || []; d._emails.push(v);
-  localStorage.setItem(stateKey, JSON.stringify(d)); box.value=''; renderEmailList();
+
+/* ---------- Attachments ---------- */
+$('#btn-upload').addEventListener('click', ()=>{
+  const files = $('#attach-input').files;
+  if (!files || !files.length) return;
+  for (const f of files) state.files.push({id:cryptoRandomId(), name:f.name, size:f.size});
+  renderFiles();
+  $('#attach-input').value = '';
+});
+function renderFiles(){
+  const ul = $('#attach-list');
+  ul.innerHTML = '';
+  state.files.forEach(f=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${f.name} — ${(f.size/1024).toFixed(1)} KB</span><button type="button" class="btn btn--ghost" data-id="${f.id}">Remove</button>`;
+    ul.appendChild(li);
+  });
+}
+$('#attach-list').addEventListener('click', (e)=>{
+  if (e.target.matches('button[data-id]')) {
+    const id = e.target.dataset.id;
+    state.files = state.files.filter(x=>x.id!==id);
+    renderFiles();
+  }
 });
 
-// Admin helper: reset trainer (exposed globally)
-function resetTrainer(){
-  if(confirm('Reset all trainer data? This will clear local storage and reload.')){ localStorage.clear(); location.reload(); }
-}
-window.resetTrainer = resetTrainer;
+/* ---------- Signature Method Send ---------- */
+$('#btn-send-sign').addEventListener('click', ()=>{
+  const phone = $('#sig-phone').value.trim();
+  const pin = $('#sig-pin').value.trim();
+  if (!phone || pin.length!==4) {
+    $('#sig-send-status').textContent = 'Enter a valid phone and 4-digit PIN.';
+    return;
+  }
+  state.signatures.appSent = true;
+  $('#sig-send-status').textContent = 'Signature links sent. You will receive an alert when completed.';
+});
 
-// Footer year
-$('#year').textContent = new Date().getFullYear();
+/* ---------- Apply eSignature / Submit ---------- */
+$('#btn-apply-esign').addEventListener('click', ()=>{
+  appendSubmitMsg('Your producer eSignature has been captured.', 'success');
+});
+$('#btn-print-app').addEventListener('click', ()=>{
+  appendSubmitMsg('Print job queued for wet signature.', 'info');
+  window.print();
+});
+$('#btn-submit-app').addEventListener('click', ()=>{
+  const pol = 'BUS' + Math.floor(100000 + Math.random()*899999);
+  appendSubmitMsg('Thank you for submitting your Electronic Application!', 'success');
+  appendSubmitMsg('Application has been referred to Underwriting for further review (1–2 business days).', 'info');
+  appendSubmitMsg(`Policy Number: ${pol}`, 'info');
+});
+function appendSubmitMsg(text, type){
+  const el = document.createElement('div');
+  el.className = 'alert ' + (type==='success'?'success':type==='error'?'error':'info');
+  el.textContent = text;
+  $('#submit-messages').appendChild(el);
+}
+
+/* ---------- Validation per Step ---------- */
+function validateCurrentStep(){
+  const key = stepKeyAt(state.currentIndex);
+  const view = $(`.step-view[data-step="${key}"]`);
+  const required = $$('input[required], select[required], textarea[required]', view);
+  let ok = true;
+  required.forEach(f=>{
+    const good = !!String(f.value).trim();
+    f.classList.toggle('error', !good);
+    if (!good) ok = false;
+  });
+
+  // Additional per-screen checks matching real flow
+  if (key==='insured') {
+    // update age
+    $('#pi-age').value = calcAgeFromDOB($('#pi-dob').value);
+    if (!$('#pi-age').value) { ok=false; $('#pi-dob').classList.add('error'); }
+  }
+  if (key==='hipaa-lock' && !state.locked.hipaa) {
+    appendBanner(view, 'Please lock data to continue.', 'warn');
+    ok = false;
+  }
+  if (key==='beneficiaries') {
+    const total = state.beneficiaries.reduce((s,b)=>s+(parseInt(b.share||'0',10)||0),0);
+    if (total!==100 || !state.beneficiaries.some(b=>b.type==='Primary')) {
+      appendBanner(view, 'Beneficiary shares must total 100% with at least one Primary.', 'error');
+      ok = false;
+    }
+  }
+  if (key==='premium') {
+    if (!state.premium.month || parseMoney($('#face-amount').value)<=0) {
+      appendBanner(view, 'Please calculate premium.', 'warn');
+      ok = false;
+    }
+  }
+  if (key==='validate-lock' && !state.locked.app) {
+    appendBanner(view, 'Application must be locked before signatures.', 'warn');
+    ok = false;
+  }
+  if (key==='signature-method' && !state.signatures.appSent) {
+    appendBanner(view, 'Send signature links before proceeding.', 'warn');
+    ok = false;
+  }
+  if (key==='welcome-consent' && !$('#welcome-consent-check').checked) {
+    appendBanner(view, 'You must acknowledge and consent to continue.', 'error');
+    ok = false;
+  }
+  return ok;
+}
+function appendBanner(view, msg, type){
+  let banner = $('.inline-banner', view);
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'alert inline-banner';
+    view.prepend(banner);
+  }
+  banner.className = `alert inline-banner ${type==='error'?'error':type==='warn'?'warn':'info'}`;
+  banner.textContent = msg;
+}
+
+/* ---------- Case Actions menu ---------- */
+$('#btn-case-actions').addEventListener('click', ()=>{
+  const menu = $('#case-actions-menu');
+  menu.hidden = !menu.hidden;
+});
+document.addEventListener('click', (e)=>{
+  if (!e.target.closest('#btn-case-actions') && !e.target.closest('#case-actions-menu')) {
+    $('#case-actions-menu').hidden = true;
+  }
+});
+
+/* ---------- Auto-populate Premium Summary from Plan step ---------- */
+['face-amount','pi-state','pi-gender'].forEach(id=>{
+  const el = $('#'+id); if(!el) return;
+  el.addEventListener('input', ()=>{
+    $('#summary-face').value = $('#face-amount').value;
+    $('#summary-state').value = $('#pi-state').value;
+    $('#summary-gender').value = $('#pi-gender').value;
+  });
+});
+
+/* ---------- Initial set ---------- */
+updateCaseHeader();
+renderBeneTable();
