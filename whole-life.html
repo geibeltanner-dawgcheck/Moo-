@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Mutual of Omaha - Whole Life Express Application</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/icon-192.png" class="brand__logo" alt="Mutual of Omaha">
+      <div class="brand__text"><strong>Mutual of Omaha</strong><span>Whole Life Express</span></div>
+    </div>
+    <nav class="topnav">
+      <span class="welcome"><span>Whole Life Insurance</span></span>
+    </nav>
+  </header>
+  
+  <div class="login-view">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <img src="assets/icon-192.png" alt="Mutual of Omaha" class="login-logo" />
+          <h1>Whole Life Express Application</h1>
+          <p>Permanent protection with guaranteed cash value growth</p>
+        </div>
+        
+        <div class="product-info">
+          <h3>Whole Life Insurance Features:</h3>
+          <ul>
+            <li>✓ Permanent life insurance protection</li>
+            <li>✓ Guaranteed cash value accumulation</li>
+            <li>✓ Fixed premiums that never increase</li>
+            <li>✓ Dividends potential (on participating policies)</li>
+            <li>✓ Policy loans available against cash value</li>
+            <li>✓ Coverage amounts from $25,000 to $1,000,000</li>
+          </ul>
+        </div>
+        
+        <form class="login-form" autocomplete="off">
+          <div class="form-group">
+            <label for="wl-first">First Name</label>
+            <input type="text" id="wl-first" required />
+          </div>
+          <div class="form-group">
+            <label for="wl-last">Last Name</label>
+            <input type="text" id="wl-last" required />
+          </div>
+          <button type="button" id="btn-wl-begin" class="btn btn--primary btn--large">
+            Begin Whole Life Application
+          </button>
+        </form>
+        
+        <div class="login-footer">
+          <p>Mutual of Omaha Whole Life - Lifetime protection with guaranteed benefits</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer">© <span id="year">2025</span> Mutual of Omaha Insurance Company</footer>
+  
+  <script>
+    document.getElementById('btn-wl-begin')?.addEventListener('click', () => {
+      const first = document.getElementById('wl-first')?.value.trim();
+      const last = document.getElementById('wl-last')?.value.trim();
+      if (first && last) {
+        sessionStorage.setItem('selectedProduct', 'Whole Life Express Application');
+        sessionStorage.setItem('applicantName', `${first} ${last}`);
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
