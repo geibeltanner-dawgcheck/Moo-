@@ -32,9 +32,7 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
       if (gaName && (first || last)) {
         gaName.value = `DAWGCHECK Partners - ${name}`;
       }
-      // Auto-fill General Agent Number with default
-      if (gaNumber && !gaNumber.value) {
-        gaNumber.value = '1186348';
+        gaNumber.value = GENERAL_AGENT_NUMBER;
       }
       // Auto-fill email with a formatted suggestion
       if (prodEmail && !prodEmail.value && first && last) {
