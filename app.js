@@ -384,7 +384,25 @@ function updateMedicalQuestions() {
 $('#plan-select')?.addEventListener('change', updateMedicalQuestions);
 
 // Initialize medical questions on page load
-document.addEventListener('DOMContentLoaded', updateMedicalQuestions);
+document.addEventListener('DOMContentLoaded', ()=>{
+  updateMedicalQuestions();
+  
+  // Handle pre-selected product from landing pages
+  const selectedProduct = sessionStorage.getItem('selectedProduct');
+  const applicantName = sessionStorage.getItem('applicantName');
+  
+  if (selectedProduct && $('#plan-select')) {
+    $('#plan-select').value = selectedProduct;
+    updateMedicalQuestions(); // Update questions based on pre-selected product
+  }
+  
+  if (applicantName) {
+    const [first, ...lastParts] = applicantName.split(' ');
+    const last = lastParts.join(' ');
+    if ($('#login-first')) $('#login-first').value = first;
+    if ($('#login-last')) $('#login-last').value = last;
+  }
+});
 
 /* ---------- Premium Calculation ---------- */
 $('#btn-calc-premium')?.addEventListener('click', ()=>{
