@@ -71,7 +71,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-ap
 .step{
   display:flex;align-items:center;gap:.6rem;padding:.52rem .55rem;border-radius:.45rem;cursor:pointer;user-select:none;
 }
-.step .dot{width:24px;height:24px;border-radius:999px;border:2px solid var(--brand-2);color:var(--brand-2);display:grid;place-items:center;background:#fff;font-weight:700;font-size:.9rem;flex:0 0 auto}
+.step .dot{
+  width:24px;height:24px;border-radius:999px;border:2px solid var(--brand-2);color:var(--brand-2);
+  display:grid;place-items:center;background:#fff;font-weight:700;font-size:.9rem;flex:0 0 auto
+}
+.step .st{margin-left:auto;font-size:.85rem;color:var(--muted)}
 .step.is-active{background:#e7f3ff;border-left:3px solid var(--brand-2)}
 .step.is-done .dot{background:var(--brand-2);color:#fff}
 .step.is-locked{opacity:.55;cursor:not-allowed}
@@ -120,6 +124,7 @@ textarea{resize:vertical}
 .alert.success{border-color:var(--ok);background:#e8fbf2}
 .alert.warn{border-color:var(--warn);background:#fff7e6}
 .alert.error{border-color:var(--err);background:#ffeaea}
+.alert.hidden{display:none}
 
 /* Buttons */
 .btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:.4rem;padding:.55rem .9rem;background:var(--brand-2);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 2px 6px #1b4f7214}
