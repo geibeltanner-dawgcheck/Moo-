@@ -1,7 +1,10 @@
-/* DAWGCHECK Training Simulator – Full Replica Flow (updated)
-   - Adds login transition
-   - Fixes welcome text population
-   - Keeps full stepper flow and behaviors
+/* DAWGCHECK Training Simulator – Polished Replica (2025-08-25)
+   Improvements:
+   - Sidebar status badges (locks, sent, totals, premium)
+   - Error summary banner + scroll to first invalid
+   - Scroll to step on navigation
+   - LocalStorage autosave/restore
+   - Service fixes and small UX polish
 */
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -14,13 +17,14 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
   const loginBtn = $('#btn-login');
 
   function gotoApp(first, last){
-    // Welcome text
     const name = [first, last].filter(Boolean).join(' ') || 'User';
     const welcomeEl = $('#welcome-text');
     if (welcomeEl) welcomeEl.textContent = `Welcome ${name}`;
-    // Show app
     if (loginView) loginView.hidden = true;
     if (appView) appView.hidden = false;
+    restoreState();
+    setActiveStep(state.currentIndex || 0);
+    updateAllStatuses();
   }
 
   if (loginBtn) {
@@ -30,7 +34,6 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
       gotoApp(first, last);
     });
   } else {
-    // No login view (direct load)
     gotoApp('', '');
   }
 })();
@@ -117,7 +120,6 @@ function stepKeyAt(i){ return state.stepOrder[i]; }
 
 function setActiveStep(i){
   state.currentIndex = i;
-  // Sidebar
   $$('.step', stepper).forEach((li, idx)=>{
     li.classList.toggle('is-active', idx===i);
     li.classList.toggle('is-done', idx<i);
@@ -126,14 +128,16 @@ function setActiveStep(i){
     const dot = $('.dot', li);
     if (dot) dot.textContent = idx<i ? '✓' : String(idx+1);
   });
-  // Views
   stepViews.forEach(sec=>{
     const show = sec.dataset.step === stepKeyAt(i);
     sec.hidden = !show;
   });
-  // Buttons
   $('#btn-back').disabled = i===0;
   $('#btn-next').textContent = (i === state.stepOrder.length-1) ? 'Finish' : 'Next ▸';
+  document.querySelector('[data-view="home"]')?.scrollIntoView({behavior:'smooth', block:'start'});
+  saveState();
+  updateAllStatuses();
+  const ge = $('#global-error'); if (ge) ge.classList.add('hidden');
 }
 setActiveStep(0);
 
@@ -161,6 +165,31 @@ $('#btn-next').addEventListener('click', ()=>{
 });
 $('#btn-back').addEventListener('click', ()=>{ if (state.currentIndex>0) setActiveStep(state.currentIndex-1); });
 
+/* ---------- Sidebar mini statuses ---------- */
+function setStatus(stepKey, text, color='var(--muted)'){
+  const el = $(`#st-${stepKey.replace(/[^a-z0-9\-]/gi,'')}`);
+  if (!el) return;
+  el.textContent = text || '';
+  el.style.color = color;
+}
+function updateAllStatuses(){
+  // Producer -> no status
+  const clientName = `${$('#pi-first')?.value||''} ${$('#pi-last')?.value||''}`.trim();
+  setStatus('insured', clientName ? clientName : '');
+  setStatus('hipaa-lock', state.locked.hipaa ? '🔒 Locked' : '');
+  setStatus('hipaa-method', state.signatures.hipaaSent ? '✉️ Sent' : '');
+  setStatus('underwriting', state.uwComplete ? '✓ Completed' : '');
+  // Beneficiaries total
+  const total = state.beneficiaries.reduce((s,b)=>s+(parseInt(b.share||'0',10)||0),0);
+  if (total>0) setStatus('beneficiaries', `${total}%`, total===100?'#065f46':'#b91c1c'); else setStatus('beneficiaries','');
+  // Premium
+  if (state.premium.month>0) setStatus('premium', money(state.premium.month), '#0b5d11'); else setStatus('premium','');
+  // App lock
+  setStatus('validate-lock', state.locked.app ? '🔒 Locked' : '');
+  // Signature method
+  setStatus('signature-method', state.signatures.appSent ? '✉️ Sent' : '');
+}
+
 /* ---------- Case Header dynamic ---------- */
 function updateCaseHeader(){
   const client = `${$('#pi-first')?.value || '—'} ${$('#pi-last')?.value || ''}`.trim() || '—';
@@ -172,6 +201,8 @@ function updateCaseHeader(){
   $('#summary-age') && ($('#summary-age').value = $('#pi-age')?.value || '');
   $('#summary-gender') && ($('#summary-gender').value = $('#pi-gender')?.value || '');
   $('#summary-face') && ($('#summary-face').value = $('#face-amount')?.value || '');
+  updateAllStatuses();
+  saveState();
 }
 document.addEventListener('input', (e)=>{
   if (['pi-first','pi-last','plan-select','pi-state','pi-gender','face-amount'].includes(e.target.id)) updateCaseHeader();
@@ -191,6 +222,8 @@ $('#btn-lock-hipaa')?.addEventListener('click', ()=>{
   $('#hipaa-unlocked-msg').hidden = true;
   $('#btn-lock-hipaa').hidden = true;
   $('#btn-unlock-hipaa').hidden = false;
+  updateAllStatuses();
+  saveState();
 });
 $('#btn-unlock-hipaa')?.addEventListener('click', ()=>{
   state.locked.hipaa = false;
@@ -198,6 +231,8 @@ $('#btn-unlock-hipaa')?.addEventListener('click', ()=>{
   $('#hipaa-unlocked-msg').hidden = false;
   $('#btn-lock-hipaa').hidden = false;
   $('#btn-unlock-hipaa').hidden = true;
+  updateAllStatuses();
+  saveState();
 });
 
 /* ---------- HIPAA Method Send ---------- */
@@ -207,6 +242,8 @@ $('#btn-hipaa-send')?.addEventListener('click', ()=>{
   if (!phone || (pin||'').length!==4) { $('#hipaa-send-status').textContent = 'Enter a valid phone and 4-digit PIN.'; return; }
   state.signatures.hipaaSent = true;
   $('#hipaa-send-status').textContent = 'Text sent from 1‑844‑307‑6442 with link to sign.';
+  updateAllStatuses();
+  saveState();
 });
 
 /* ---------- Policies Tables ---------- */
@@ -219,11 +256,11 @@ function policyRow(id, carrier=false){
     <td><button type="button" class="btn btn--ghost" data-remove>Remove</button></td>
   </tr>`;
 }
-$('#btn-add-carrier-policy')?.addEventListener('click', ()=>{ $('#carrier-policies').insertAdjacentHTML('beforeend', policyRow(randId(), true)); });
-$('#btn-add-other-policy')?.addEventListener('click', ()=>{ $('#other-policies').insertAdjacentHTML('beforeend', policyRow(randId(), false)); });
+$('#btn-add-carrier-policy')?.addEventListener('click', ()=>{ $('#carrier-policies').insertAdjacentHTML('beforeend', policyRow(randId(), true)); saveState(); });
+$('#btn-add-other-policy')?.addEventListener('click', ()=>{ $('#other-policies').insertAdjacentHTML('beforeend', policyRow(randId(), false)); saveState(); });
 ['carrier-policies','other-policies'].forEach(id=>{
   const el = $('#'+id);
-  el?.addEventListener('click', e=>{ if (e.target.matches('[data-remove]')) e.target.closest('tr').remove(); });
+  el?.addEventListener('click', e=>{ if (e.target.matches('[data-remove]')) {e.target.closest('tr').remove(); saveState();} });
 });
 
 /* ---------- Beneficiaries ---------- */
@@ -252,6 +289,8 @@ function renderBeneTable(){
     totalEl.textContent = `Total: ${total}%`;
     totalEl.style.color = (total===100 && state.beneficiaries.some(b=>b.type==='Primary')) ? '#065f46' : '#b91c1c';
   }
+  updateAllStatuses();
+  saveState();
 }
 function randId(){ return Math.random().toString(36).slice(2,9); }
 $('#btn-add-bene')?.addEventListener('click', ()=>{
@@ -289,6 +328,8 @@ $('#btn-find-products')?.addEventListener('click', ()=>{
   const list = PRODUCT_MATRIX[`${s}|${t}`] || [];
   const sel = $('#pre-products');
   sel.innerHTML = list.map(p=>`<option>${p}</option>`).join('') || '<option disabled>No products found</option>';
+  setStatus('pre-approval', list.length? `${list.length} found` : 'None', list.length?'#0b5d11':'#b91c1c');
+  saveState();
 });
 
 /* ---------- Health Assessment ---------- */
@@ -298,6 +339,8 @@ $('#btn-health-assessment')?.addEventListener('click', ()=>{
     state.uwComplete = true;
     $('#uw-success').hidden = false;
     $('#health-status').textContent = 'Responses submitted.';
+    updateAllStatuses();
+    saveState();
   }, 1000);
 });
 
@@ -316,6 +359,8 @@ $('#btn-calc-premium')?.addEventListener('click', ()=>{
   $('#prem-semi').textContent = money(semi);
   $('#prem-quarter').textContent = money(quarter);
   $('#prem-month').textContent = money(monthly);
+  updateAllStatuses();
+  saveState();
 });
 
 /* ---------- Validate & Lock (App) ---------- */
@@ -325,6 +370,8 @@ $('#btn-lock-app')?.addEventListener('click', ()=>{
   $('#btn-lock-app').hidden = true;
   $('#btn-unlock-app').hidden = false;
   setFormEnabled(false);
+  updateAllStatuses();
+  saveState();
 });
 $('#btn-unlock-app')?.addEventListener('click', ()=>{
   state.locked.app = false;
@@ -332,6 +379,8 @@ $('#btn-unlock-app')?.addEventListener('click', ()=>{
   $('#btn-lock-app').hidden = false;
   $('#btn-unlock-app').hidden = true;
   setFormEnabled(true);
+  updateAllStatuses();
+  saveState();
 });
 function setFormEnabled(enabled){
   $$('#wizard input, #wizard select, #wizard textarea').forEach(el=>{
@@ -347,6 +396,8 @@ $('#btn-upload')?.addEventListener('click', ()=>{
   for (const f of files) state.files.push({id:randId(), name:f.name, size:f.size});
   renderFiles();
   $('#attach-input').value = '';
+  setStatus('attachments', `${state.files.length} file${state.files.length!==1?'s':''}`, '#0b5d11');
+  saveState();
 });
 function renderFiles(){
   const ul = $('#attach-list'); if (!ul) return;
@@ -362,6 +413,8 @@ $('#attach-list')?.addEventListener('click', (e)=>{
     const id = e.target.dataset.id;
     state.files = state.files.filter(x=>x.id!==id);
     renderFiles();
+    setStatus('attachments', state.files.length? `${state.files.length} files` : '', state.files.length?'#0b5d11':'var(--muted)');
+    saveState();
   }
 });
 
@@ -372,6 +425,8 @@ $('#btn-send-sign')?.addEventListener('click', ()=>{
   if (!phone || (pin||'').length!==4) { $('#sig-send-status').textContent = 'Enter a valid phone and 4-digit PIN.'; return; }
   state.signatures.appSent = true;
   $('#sig-send-status').textContent = 'Signature links sent. You will receive an alert when completed.';
+  updateAllStatuses();
+  saveState();
 });
 
 /* ---------- Apply eSignature / Submit ---------- */
@@ -399,32 +454,52 @@ function validateCurrentStep(){
   const view = $(`.step-view[data-step="${key}"]`);
   const required = $$('input[required], select[required], textarea[required]', view);
   let ok = true;
+  let messages = [];
+
   required.forEach(f=>{
     const good = !!String(f.value).trim();
     f.classList.toggle('error', !good);
-    if (!good) ok = false;
+    if (!good) {
+      ok = false;
+      const label = f.closest('.field')?.querySelector('label')?.textContent?.replace('*','').trim() || f.id;
+      messages.push(`${label} is required`);
+    }
   });
 
   if (key==='insured') {
     const ageEl = $('#pi-age');
     const age = calcAgeFromDOB($('#pi-dob')?.value);
     if (ageEl) ageEl.value = age;
-    if (!age) { ok=false; $('#pi-dob').classList.add('error'); }
+    if (!age) { ok=false; $('#pi-dob').classList.add('error'); messages.push('Valid Date of Birth required'); }
   }
-  if (key==='hipaa-lock' && !state.locked.hipaa) { appendBanner(view, 'Please lock data to continue.', 'warn'); ok = false; }
+  if (key==='hipaa-lock' && !state.locked.hipaa) { ok = false; messages.push('Lock HIPAA data to continue'); }
   if (key==='beneficiaries') {
     const total = state.beneficiaries.reduce((s,b)=>s+(parseInt(b.share||'0',10)||0),0);
     if (total!==100 || !state.beneficiaries.some(b=>b.type==='Primary')) {
-      appendBanner(view, 'Beneficiary shares must total 100% with at least one Primary.', 'error'); ok = false;
+      ok = false; messages.push('Beneficiary shares must total 100% and include at least one Primary');
     }
   }
   if (key==='premium') {
-    if (!state.premium.month || parseMoney($('#face-amount')?.value)<=0) { appendBanner(view, 'Please calculate premium.', 'warn'); ok = false; }
+    if (!state.premium.month || parseMoney($('#face-amount')?.value)<=0) { ok = false; messages.push('Calculate premium before continuing'); }
   }
-  if (key==='validate-lock' && !state.locked.app) { appendBanner(view, 'Application must be locked before signatures.', 'warn'); ok = false; }
-  if (key==='signature-method' && !state.signatures.appSent) { appendBanner(view, 'Send signature links before proceeding.', 'warn'); ok = false; }
-  if (key==='welcome-consent' && !$('#welcome-consent-check')?.checked) { appendBanner(view, 'You must acknowledge and consent to continue.', 'error'); ok = false; }
+  if (key==='validate-lock' && !state.locked.app) { ok = false; messages.push('Application must be locked before signatures'); }
+  if (key==='signature-method' && !state.signatures.appSent) { ok = false; messages.push('Send signature links before continuing'); }
+  if (key==='welcome-consent' && !$('#welcome-consent-check')?.checked) { ok = false; messages.push('Acknowledge welcome consent'); }
+
+  if (!ok) {
+    showGlobalError(messages);
+    // scroll to first error input if exists
+    const firstError = view.querySelector('.error');
+    firstError?.scrollIntoView({behavior:'smooth', block:'center'});
+  } else {
+    $('#global-error')?.classList.add('hidden');
+  }
   return ok;
+}
+function showGlobalError(messages){
+  const ge = $('#global-error'); if (!ge) return;
+  ge.innerHTML = 'Please address the following:<ul style="margin:.4rem 0 .2rem 1rem">' + messages.map(m=>`<li>${m}</li>`).join('') + '</ul>';
+  ge.classList.remove('hidden');
 }
 function appendBanner(view, msg, type){
   let banner = $('.inline-banner', view);
@@ -451,9 +526,53 @@ document.addEventListener('click', (e)=>{
     $('#summary-face') && ($('#summary-face').value = $('#face-amount')?.value || '');
     $('#summary-state') && ($('#summary-state').value = $('#pi-state')?.value || '');
     $('#summary-gender') && ($('#summary-gender').value = $('#pi-gender')?.value || '');
+    saveState();
   });
 });
+
+/* ---------- Persistence ---------- */
+const STORAGE_KEY = 'dawgcheck-app-state-v2';
+function saveState(){
+  try{
+    const values = {};
+    $$('#wizard input, #wizard select, #wizard textarea').forEach(el=>{
+      if (!el.id) return;
+      if (el.type==='radio' || el.type==='checkbox') {
+        values[el.id || el.name + ':' + el.value] = el.checked;
+      } else {
+        values[el.id] = el.value;
+      }
+    });
+    const payload = {
+      values,
+      state,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }catch{}
+}
+function restoreState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const payload = JSON.parse(raw);
+    if (payload?.values) {
+      Object.entries(payload.values).forEach(([id,val])=>{
+        const el = document.getElementById(id) || document.querySelector(`[name="${id.split(':')[0]}"][value="${id.split(':')[1]}"]`);
+        if (!el) return;
+        if (el.type==='radio' || el.type==='checkbox') el.checked = !!val;
+        else el.value = val;
+      });
+    }
+    if (payload?.state) {
+      Object.assign(state, payload.state);
+      // Re-render dynamic bits
+      renderFiles();
+      renderBeneTable();
+    }
+  }catch{}
+}
 
 /* ---------- Initial set ---------- */
 updateCaseHeader();
 renderBeneTable();
+updateAllStatuses();
