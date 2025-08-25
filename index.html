@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#1b4f72" />
-  <title>DAWGCHECK Training Simulator</title>
+  <title>Mutual of Omaha Application</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css?v=2025.08.25.1" />
 </head>
@@ -12,10 +12,10 @@
   <!-- Top App Bar -->
   <header class="topbar" role="banner">
     <div class="brand">
-      <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="brand__logo" />
+      <img src="assets/icons/icon-192.png" alt="Mutual of Omaha" class="brand__logo" />
       <div class="brand__text">
-        <strong>DAWGCHECK</strong>
-        <span>Training Simulator</span>
+        <strong>Mutual of Omaha</strong>
+        <span>Application Portal</span>
       </div>
     </div>
     <nav class="topnav" aria-label="Top navigation">
@@ -32,9 +32,9 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
-          <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="login-logo" />
-          <h1>DAWGCHECK Training Simulator</h1>
-          <p>Professional Insurance Application Training</p>
+          <img src="assets/icons/icon-192.png" alt="Mutual of Omaha" class="login-logo" />
+          <h1>Mutual of Omaha</h1>
+          <p>Life Insurance Application Portal</p>
         </div>
         <form class="login-form" autocomplete="off">
           <div class="form-group">
@@ -46,11 +46,11 @@
             <input type="text" id="login-last" required />
           </div>
           <button type="button" id="btn-login" class="btn btn--primary btn--large">
-            Enter Training Simulator
+            Begin Application
           </button>
         </form>
         <div class="login-footer">
-          <p><small>This is a training environment. All data is simulated.</small></p>
+          <p><small>Secure application portal for Mutual of Omaha life insurance products.</small></p>
         </div>
       </div>
     </div>
@@ -155,7 +155,7 @@
           <section class="step-view" data-step="producer">
             <h2>Producer Information</h2>
             <div class="grid">
-              <div class="field"><label>General Agent Name</label><input id="ga-name" placeholder="DAWGCHECK Partners" /></div>
+              <div class="field"><label>General Agent Name</label><input id="ga-name" placeholder="Mutual of Omaha Partners" /></div>
               <div class="field"><label>General Agent Number</label><input id="ga-number" placeholder="1186348" /></div>
 
               <div class="field"><label>First <b class="req">*</b></label><input id="prod-first" required /></div>
@@ -252,7 +252,7 @@
                 <button type="button" class="btn btn--primary" id="btn-lock-hipaa">Lock Data</button>
                 <button type="button" class="btn btn--ghost" id="btn-unlock-hipaa" hidden>Unlock Application Data and Cancel Signature Process</button>
               </div>
-              <p class="note">This information will remain on DAWGCHECK for 10 days after no activity.</p>
+              <p class="note">This information will be securely stored and processed according to Mutual of Omaha privacy policies.</p>
             </div>
           </section>
 
@@ -364,12 +364,14 @@
             <div class="grid">
               <div class="field span-2"><label>Plan</label>
                 <select id="plan-select">
-                  <option>Indexed Universal Life Express with Easy Solve</option>
+                  <option>Term Life Express Application</option>
                   <option>Term Life Answers – Full Application</option>
-                  <option>Term Life Answers – Speed eTicket</option>
                   <option>Term Life Express Point of Sale Decision</option>
-                  <option>Living Promise Level</option>
-                  <option>Living Promise Graded</option>
+                  <option>Whole Life Express Application</option>
+                  <option>Living Promise Level Express</option>
+                  <option>Living Promise Graded Express</option>
+                  <option>Indexed Universal Life Express Application</option>
+                  <option>IUL Express with Easy Solve</option>
                 </select>
               </div>
               <div class="field"><label>Max Coverage Allowed (based on existing)</label><input id="max-coverage" value="$230,000" readonly /></div>
@@ -591,7 +593,7 @@
     </div>
   </div>
 
-  <footer class="footer">© <span id="year"></span> DAWGCHECK Training Simulator</footer>
+  <footer class="footer">© <span id="year"></span> Mutual of Omaha Insurance Company</footer>
 
   <script src="app.js?v=2025.08.25.1"></script>
   <script>
