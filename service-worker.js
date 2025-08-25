@@ -1,31 +1,36 @@
-// DAWGCHECK trainer service worker (static cache)
-const CACHE = 'dawgcheck-v1';
+// DAWGCHECK Training Simulator – Service Worker (fixed asset names)
+const CACHE = 'dawgcheck-cache-v4';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
+  './styles.css',
   './app.js',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './assets/icon-192.png',
+  './assets/icon-512.png'
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+self.addEventListener('install', (event)=>{
+  event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
   self.skipWaiting();
 });
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-  );
+self.addEventListener('activate', (event)=>{
+  event.waitUntil(
+    caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))))
   self.clients.claim();
 });
-
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  e.respondWith(
-    caches.match(req).then(cached => cached || fetch(req))
+self.addEventListener('fetch', (event)=>{
+  if (event.request.method!=='GET') return;
+  event.respondWith(
+    caches.match(event.request).then(cached=>{
+      if (cached) return cached;
+      return fetch(event.request).then(resp=>{
+        const copy = resp.clone();
+        if (resp.ok && new URL(event.request.url).origin === location.origin) {
+          caches.open(CACHE).then(c=>c.put(event.request, copy)).catch(()=>{});
+        }
+        return resp;
+      }).catch(()=>caches.match('./index.html'));
+    })
   );
 });
