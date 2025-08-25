@@ -134,8 +134,9 @@ document.addEventListener('input', (e)=>{
     // Auto-calculate age if DOB field has an associated age field
     if (v.length === 10) { // Complete date MM/DD/YYYY
       const age = calcAgeFromDOB(v);
-      if (age && t.id === 'pi-dob') {
-        const ageEl = $('#pi-age'); 
+      const ageTargetSelector = t.getAttribute('data-age-target');
+      if (age && ageTargetSelector) {
+        const ageEl = $(ageTargetSelector);
         if (ageEl) ageEl.value = age;
       }
     }
