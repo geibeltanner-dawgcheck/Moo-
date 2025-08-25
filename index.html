@@ -6,13 +6,12 @@
   <meta name="theme-color" content="#1b4f72" />
   <title>DAWGCHECK Training Simulator</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=2025.08.24.2" />
+  <link rel="stylesheet" href="styles.css?v=2025.08.25.1" />
 </head>
 <body>
   <!-- Top App Bar -->
   <header class="topbar" role="banner">
     <div class="brand">
-      <!-- Use an existing repo icon so the header logo always loads -->
       <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="brand__logo" />
       <div class="brand__text">
         <strong>DAWGCHECK</strong>
@@ -64,64 +63,64 @@
       <aside id="sidebar" aria-label="Application steps">
         <ol id="step-list" class="stepper" role="tablist" aria-orientation="vertical">
           <li class="step is-active" role="tab" aria-selected="true" tabindex="0" data-step="producer">
-            <span class="dot">1</span><span>Producer Information</span>
+            <span class="dot">1</span><span>Producer Information</span><span class="st" id="st-producer"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="insured">
-            <span class="dot">2</span><span>Proposed Insured</span>
+            <span class="dot">2</span><span>Proposed Insured</span><span class="st" id="st-insured"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="confirm-id">
-            <span class="dot">3</span><span>Confirm Identity</span>
+            <span class="dot">3</span><span>Confirm Identity</span><span class="st" id="st-confirm-id"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="hipaa-lock">
-            <span class="dot">4</span><span>HIPAA Signature & Lock</span>
+            <span class="dot">4</span><span>HIPAA Signature & Lock</span><span class="st" id="st-hipaa-lock"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="hipaa-method">
-            <span class="dot">5</span><span>HIPAA Signature Method</span>
+            <span class="dot">5</span><span>HIPAA Signature Method</span><span class="st" id="st-hipaa-method"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="insured-continued">
-            <span class="dot">6</span><span>Proposed Insured Cont’d</span>
+            <span class="dot">6</span><span>Proposed Insured Cont’d</span><span class="st" id="st-insured-continued"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="history">
-            <span class="dot">7</span><span>Insurance History</span>
+            <span class="dot">7</span><span>Insurance History</span><span class="st" id="st-history"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="plan">
-            <span class="dot">8</span><span>Plan Information</span>
+            <span class="dot">8</span><span>Plan Information</span><span class="st" id="st-plan"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="pre-approval">
-            <span class="dot">9</span><span>Pre‑Approval Information</span>
+            <span class="dot">9</span><span>Pre‑Approval Information</span><span class="st" id="st-pre-approval"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="underwriting">
-            <span class="dot">10</span><span>Underwriting</span>
+            <span class="dot">10</span><span>Underwriting</span><span class="st" id="st-underwriting"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="beneficiaries">
-            <span class="dot">11</span><span>Beneficiaries</span>
+            <span class="dot">11</span><span>Beneficiaries</span><span class="st" id="st-beneficiaries"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="premium">
-            <span class="dot">12</span><span>Premium Summary</span>
+            <span class="dot">12</span><span>Premium Summary</span><span class="st" id="st-premium"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="billing">
-            <span class="dot">13</span><span>Automatic Bill Pay</span>
+            <span class="dot">13</span><span>Automatic Bill Pay</span><span class="st" id="st-billing"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="validate-lock">
-            <span class="dot">14</span><span>Validate & Lock Data</span>
+            <span class="dot">14</span><span>Validate & Lock Data</span><span class="st" id="st-validate-lock"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="attachments">
-            <span class="dot">15</span><span>Attachments</span>
+            <span class="dot">15</span><span>Attachments</span><span class="st" id="st-attachments"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="post-email">
-            <span class="dot">16</span><span>Post‑Submission Email Set‑Up</span>
+            <span class="dot">16</span><span>Post‑Submission Email Set‑Up</span><span class="st" id="st-post-email"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="signature-method">
-            <span class="dot">17</span><span>Signature Method</span>
+            <span class="dot">17</span><span>Signature Method</span><span class="st" id="st-signature-method"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="producer-statement">
-            <span class="dot">18</span><span>Producer Statement</span>
+            <span class="dot">18</span><span>Producer Statement</span><span class="st" id="st-producer-statement"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="welcome-consent">
-            <span class="dot">19</span><span>Welcome Consent – Producer</span>
+            <span class="dot">19</span><span>Welcome Consent – Producer</span><span class="st" id="st-welcome-consent"></span>
           </li>
           <li class="step" role="tab" aria-selected="false" tabindex="-1" data-step="apply-esign-producer">
-            <span class="dot">20</span><span>Apply eSignature – Producer</span>
+            <span class="dot">20</span><span>Apply eSignature – Producer</span><span class="st" id="st-apply-esign-producer"></span>
           </li>
         </ol>
       </aside>
@@ -129,6 +128,8 @@
       <!-- Main Wizard -->
       <main id="main" role="main">
         <form id="wizard" novalidate>
+          <div id="global-error" class="alert error hidden" role="alert"></div>
+
           <!-- Case Header -->
           <div class="case-header">
             <div class="case-breadcrumb">
@@ -592,8 +593,7 @@
 
   <footer class="footer">© <span id="year"></span> DAWGCHECK Training Simulator</footer>
 
-  <!-- IMPORTANT: load the correct JS file -->
-  <script src="app.js?v=2025.08.24.2"></script>
+  <script src="app.js?v=2025.08.25.1"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').catch(()=>{});
