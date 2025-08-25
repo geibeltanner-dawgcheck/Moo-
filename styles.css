@@ -109,6 +109,14 @@ h2{margin:.2rem 0 .8rem 0;font-size:1.2rem}
 .req{color:#b91c1c}
 span.muted,.muted{color:var(--muted);font-size:.95rem}
 
+/* Field Groups for Medical Questionnaire */
+.field-group{margin-bottom:2rem;padding:1.5rem;border:1px solid var(--line);border-radius:.5rem;background:var(--panel)}
+.field-group h3{margin:0 0 1rem 0;color:var(--brand);font-size:1.1rem;font-weight:600;border-bottom:2px solid var(--line);padding-bottom:.5rem}
+.field-group .grid{gap:1rem}
+.field-group .field{margin-bottom:1rem}
+.field-group .radios{display:flex;gap:1rem;align-items:center}
+.field-group textarea{min-height:80px;resize:vertical}
+
 /* Inputs */
 input,select,textarea,button{font:inherit}
 input,select,textarea{background:#f8fafc;border:1px solid #cfd9e6;border-radius:.35rem;padding:.55rem .65rem;width:100%}

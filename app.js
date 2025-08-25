@@ -346,17 +346,45 @@ $('#btn-find-products')?.addEventListener('click', ()=>{
   saveState();
 });
 
-/* ---------- Health Assessment ---------- */
-$('#btn-health-assessment')?.addEventListener('click', ()=>{
-  $('#health-status').textContent = 'Assessment in progress…';
+/* ---------- Medical Questionnaire ---------- */
+$('#btn-complete-medical')?.addEventListener('click', ()=>{
+  $('#medical-status').textContent = 'Processing questionnaire responses...';
   setTimeout(()=>{
     state.uwComplete = true;
     $('#uw-success').hidden = false;
-    $('#health-status').textContent = 'Responses submitted.';
+    $('#medical-status').textContent = 'Questionnaire completed.';
     updateAllStatuses();
     saveState();
   }, 1000);
 });
+
+// Show product-specific medical questions based on selected plan
+function updateMedicalQuestions() {
+  const selectedPlan = $('#plan-select')?.value || '';
+  const termQuestions = $('#term-questions');
+  const wholeLifeQuestions = $('#whole-life-questions');
+  const iulQuestions = $('#iul-questions');
+  
+  // Hide all product-specific questions first
+  if (termQuestions) termQuestions.style.display = 'none';
+  if (wholeLifeQuestions) wholeLifeQuestions.style.display = 'none';
+  if (iulQuestions) iulQuestions.style.display = 'none';
+  
+  // Show relevant questions based on product type
+  if (selectedPlan.includes('Term Life')) {
+    if (termQuestions) termQuestions.style.display = 'block';
+  } else if (selectedPlan.includes('Whole Life') || selectedPlan.includes('Living Promise')) {
+    if (wholeLifeQuestions) wholeLifeQuestions.style.display = 'block';
+  } else if (selectedPlan.includes('Universal Life') || selectedPlan.includes('IUL')) {
+    if (iulQuestions) iulQuestions.style.display = 'block';
+  }
+}
+
+// Update medical questions when plan selection changes
+$('#plan-select')?.addEventListener('change', updateMedicalQuestions);
+
+// Initialize medical questions on page load
+document.addEventListener('DOMContentLoaded', updateMedicalQuestions);
 
 /* ---------- Premium Calculation ---------- */
 $('#btn-calc-premium')?.addEventListener('click', ()=>{
