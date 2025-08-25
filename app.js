@@ -317,10 +317,24 @@ $('#bene-body')?.addEventListener('input', e=>{
 
 /* ---------- Pre-Approval products ---------- */
 const PRODUCT_MATRIX = {
-  "AL|Term Life":[ "Term Life Answers – Full Application","Term Life Answers – Speed eTicket","Term Life Express Point of Sale Decision" ],
-  "CA|Indexed Universal Life":[ "Indexed Universal Life Express with Easy Solve" ],
-  "NE|Term Life":[ "Term Life Answers – Full Application","Term Life Express Point of Sale Decision" ],
-  "NE|Indexed Universal Life":[ "Indexed Universal Life Express with Easy Solve" ],
+  "AL|Term Life":[ "Term Life Express Application","Term Life Answers – Full Application","Term Life Express Point of Sale Decision" ],
+  "AL|Whole Life":[ "Whole Life Express Application","Living Promise Level Express","Living Promise Graded Express" ],
+  "AL|Indexed Universal Life":[ "Indexed Universal Life Express Application","IUL Express with Easy Solve" ],
+  "CA|Term Life":[ "Term Life Express Application","Term Life Answers – Full Application" ],
+  "CA|Whole Life":[ "Whole Life Express Application","Living Promise Level Express" ],
+  "CA|Indexed Universal Life":[ "Indexed Universal Life Express Application","IUL Express with Easy Solve" ],
+  "FL|Term Life":[ "Term Life Express Application","Term Life Answers – Full Application","Term Life Express Point of Sale Decision" ],
+  "FL|Whole Life":[ "Whole Life Express Application","Living Promise Level Express","Living Promise Graded Express" ],
+  "FL|Indexed Universal Life":[ "Indexed Universal Life Express Application","IUL Express with Easy Solve" ],
+  "GA|Term Life":[ "Term Life Express Application","Term Life Answers – Full Application" ],
+  "GA|Whole Life":[ "Whole Life Express Application","Living Promise Level Express" ],
+  "GA|Indexed Universal Life":[ "Indexed Universal Life Express Application","IUL Express with Easy Solve" ],
+  "NE|Term Life":[ "Term Life Express Application","Term Life Answers – Full Application","Term Life Express Point of Sale Decision" ],
+  "NE|Whole Life":[ "Whole Life Express Application","Living Promise Level Express","Living Promise Graded Express" ],
+  "NE|Indexed Universal Life":[ "Indexed Universal Life Express Application","IUL Express with Easy Solve" ],
+  "TX|Term Life":[ "Term Life Express Application","Term Life Answers – Full Application","Term Life Express Point of Sale Decision" ],
+  "TX|Whole Life":[ "Whole Life Express Application","Living Promise Level Express" ],
+  "TX|Indexed Universal Life":[ "Indexed Universal Life Express Application","IUL Express with Easy Solve" ]
 };
 $('#btn-find-products')?.addEventListener('click', ()=>{
   const s = $('#pre-state').value;
@@ -332,16 +346,62 @@ $('#btn-find-products')?.addEventListener('click', ()=>{
   saveState();
 });
 
-/* ---------- Health Assessment ---------- */
-$('#btn-health-assessment')?.addEventListener('click', ()=>{
-  $('#health-status').textContent = 'Assessment in progress…';
+/* ---------- Medical Questionnaire ---------- */
+$('#btn-complete-medical')?.addEventListener('click', ()=>{
+  $('#medical-status').textContent = 'Processing questionnaire responses...';
   setTimeout(()=>{
     state.uwComplete = true;
     $('#uw-success').hidden = false;
-    $('#health-status').textContent = 'Responses submitted.';
+    $('#medical-status').textContent = 'Questionnaire completed.';
     updateAllStatuses();
     saveState();
   }, 1000);
+});
+
+// Show product-specific medical questions based on selected plan
+function updateMedicalQuestions() {
+  const selectedPlan = $('#plan-select')?.value || '';
+  const termQuestions = $('#term-questions');
+  const wholeLifeQuestions = $('#whole-life-questions');
+  const iulQuestions = $('#iul-questions');
+  
+  // Hide all product-specific questions first
+  if (termQuestions) termQuestions.style.display = 'none';
+  if (wholeLifeQuestions) wholeLifeQuestions.style.display = 'none';
+  if (iulQuestions) iulQuestions.style.display = 'none';
+  
+  // Show relevant questions based on product type
+  if (selectedPlan.includes('Term Life')) {
+    if (termQuestions) termQuestions.style.display = 'block';
+  } else if (selectedPlan.includes('Whole Life') || selectedPlan.includes('Living Promise')) {
+    if (wholeLifeQuestions) wholeLifeQuestions.style.display = 'block';
+  } else if (selectedPlan.includes('Universal Life') || selectedPlan.includes('IUL')) {
+    if (iulQuestions) iulQuestions.style.display = 'block';
+  }
+}
+
+// Update medical questions when plan selection changes
+$('#plan-select')?.addEventListener('change', updateMedicalQuestions);
+
+// Initialize medical questions on page load
+document.addEventListener('DOMContentLoaded', ()=>{
+  updateMedicalQuestions();
+  
+  // Handle pre-selected product from landing pages
+  const selectedProduct = sessionStorage.getItem('selectedProduct');
+  const applicantName = sessionStorage.getItem('applicantName');
+  
+  if (selectedProduct && $('#plan-select')) {
+    $('#plan-select').value = selectedProduct;
+    updateMedicalQuestions(); // Update questions based on pre-selected product
+  }
+  
+  if (applicantName) {
+    const [first, ...lastParts] = applicantName.split(' ');
+    const last = lastParts.join(' ');
+    if ($('#login-first')) $('#login-first').value = first;
+    if ($('#login-last')) $('#login-last').value = last;
+  }
 });
 
 /* ---------- Premium Calculation ---------- */
@@ -349,7 +409,24 @@ $('#btn-calc-premium')?.addEventListener('click', ()=>{
   const face = parseMoney($('#face-amount')?.value || $('#summary-face')?.value);
   const age = parseInt($('#pi-age')?.value||'45',10);
   const tobacco = $('#summary-tobacco')?.value === 'Tobacco';
-  const baseRate = Math.max(0.75, Math.min(1.85, 0.9 + (age-35)*0.02 + (tobacco?0.25:0)));
+  const selectedPlan = $('#plan-select')?.value || '';
+  
+  // Product-specific rate calculation
+  let baseRate;
+  if (selectedPlan.includes('Term Life')) {
+    // Term life rates - lowest cost
+    baseRate = Math.max(0.60, Math.min(1.50, 0.75 + (age-35)*0.015 + (tobacco?0.35:0)));
+  } else if (selectedPlan.includes('Whole Life') || selectedPlan.includes('Living Promise')) {
+    // Whole life rates - higher cost, builds cash value
+    baseRate = Math.max(1.20, Math.min(3.50, 1.80 + (age-35)*0.025 + (tobacco?0.55:0)));
+  } else if (selectedPlan.includes('Universal Life') || selectedPlan.includes('IUL')) {
+    // IUL rates - moderate cost, investment component
+    baseRate = Math.max(0.95, Math.min(2.80, 1.35 + (age-35)*0.020 + (tobacco?0.45:0)));
+  } else {
+    // Default calculation
+    baseRate = Math.max(0.75, Math.min(1.85, 0.9 + (age-35)*0.02 + (tobacco?0.25:0)));
+  }
+  
   const annual = (face/1000) * (baseRate*12*1.15);
   const monthly = annual/12;
   const semi = annual/2 * 1.02;

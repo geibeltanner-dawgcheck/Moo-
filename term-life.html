@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Mutual of Omaha - Term Life Express Application</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/icons/icon-192.png" class="brand__logo" alt="Mutual of Omaha">
+      <div class="brand__text"><strong>Mutual of Omaha</strong><span>Term Life Express</span></div>
+    </div>
+    <nav class="topnav">
+      <span class="welcome"><span>Term Life Insurance</span></span>
+    </nav>
+  </header>
+  
+  <div class="login-view">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <img src="assets/icons/icon-192.png" alt="Mutual of Omaha" class="login-logo" />
+          <h1>Term Life Express Application</h1>
+          <p>Fast, affordable protection for your family's future</p>
+        </div>
+        
+        <div class="product-info">
+          <h3>Term Life Insurance Features:</h3>
+          <ul>
+            <li>✓ Affordable premiums with guaranteed level rates</li>
+            <li>✓ Coverage amounts from $100,000 to $2,000,000</li>
+            <li>✓ Express underwriting - quick approval process</li>
+            <li>✓ Convertible to permanent life insurance</li>
+            <li>✓ Term periods: 10, 20, or 30 years</li>
+          </ul>
+        </div>
+        
+        <form class="login-form" autocomplete="off">
+          <div class="form-group">
+            <label for="term-first">First Name</label>
+            <input type="text" id="term-first" required />
+          </div>
+          <div class="form-group">
+            <label for="term-last">Last Name</label>
+            <input type="text" id="term-last" required />
+          </div>
+          <button type="button" id="btn-term-begin" class="btn btn--primary btn--large">
+            Begin Term Life Application
+          </button>
+        </form>
+        
+        <div class="login-footer">
+          <p>Mutual of Omaha Term Life Insurance - Protection when you need it most</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer">© <span id="year">2025</span> Mutual of Omaha Insurance Company</footer>
+  
+  <script>
+    document.getElementById('btn-term-begin')?.addEventListener('click', () => {
+      const first = document.getElementById('term-first')?.value.trim();
+      const last = document.getElementById('term-last')?.value.trim();
+      if (first && last) {
+        sessionStorage.setItem('selectedProduct', 'Term Life Express Application');
+        sessionStorage.setItem('applicantName', `${first} ${last}`);
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

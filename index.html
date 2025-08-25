@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#1b4f72" />
-  <title>DAWGCHECK Training Simulator</title>
+  <title>Mutual of Omaha Application</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css?v=2025.08.25.1" />
 </head>
@@ -12,10 +12,10 @@
   <!-- Top App Bar -->
   <header class="topbar" role="banner">
     <div class="brand">
-      <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="brand__logo" />
+      <img src="assets/icons/icon-192.png" alt="Mutual of Omaha" class="brand__logo" />
       <div class="brand__text">
-        <strong>DAWGCHECK</strong>
-        <span>Training Simulator</span>
+        <strong>Mutual of Omaha</strong>
+        <span>Application Portal</span>
       </div>
     </div>
     <nav class="topnav" aria-label="Top navigation">
@@ -32,9 +32,9 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
-          <img src="assets/icons/icon-192.png" alt="DAWGCHECK" class="login-logo" />
-          <h1>DAWGCHECK Training Simulator</h1>
-          <p>Professional Insurance Application Training</p>
+          <img src="assets/icons/icon-192.png" alt="Mutual of Omaha" class="login-logo" />
+          <h1>Mutual of Omaha</h1>
+          <p>Life Insurance Application Portal</p>
         </div>
         <form class="login-form" autocomplete="off">
           <div class="form-group">
@@ -46,11 +46,11 @@
             <input type="text" id="login-last" required />
           </div>
           <button type="button" id="btn-login" class="btn btn--primary btn--large">
-            Enter Training Simulator
+            Begin Application
           </button>
         </form>
         <div class="login-footer">
-          <p><small>This is a training environment. All data is simulated.</small></p>
+          <p><small>Secure application portal for Mutual of Omaha life insurance products.</small></p>
         </div>
       </div>
     </div>
@@ -155,7 +155,7 @@
           <section class="step-view" data-step="producer">
             <h2>Producer Information</h2>
             <div class="grid">
-              <div class="field"><label>General Agent Name</label><input id="ga-name" placeholder="DAWGCHECK Partners" /></div>
+              <div class="field"><label>General Agent Name</label><input id="ga-name" placeholder="Mutual of Omaha Partners" /></div>
               <div class="field"><label>General Agent Number</label><input id="ga-number" placeholder="1186348" /></div>
 
               <div class="field"><label>First <b class="req">*</b></label><input id="prod-first" required /></div>
@@ -252,7 +252,7 @@
                 <button type="button" class="btn btn--primary" id="btn-lock-hipaa">Lock Data</button>
                 <button type="button" class="btn btn--ghost" id="btn-unlock-hipaa" hidden>Unlock Application Data and Cancel Signature Process</button>
               </div>
-              <p class="note">This information will remain on DAWGCHECK for 10 days after no activity.</p>
+              <p class="note">This information will be securely stored and processed according to Mutual of Omaha privacy policies.</p>
             </div>
           </section>
 
@@ -364,12 +364,14 @@
             <div class="grid">
               <div class="field span-2"><label>Plan</label>
                 <select id="plan-select">
-                  <option>Indexed Universal Life Express with Easy Solve</option>
+                  <option>Term Life Express Application</option>
                   <option>Term Life Answers – Full Application</option>
-                  <option>Term Life Answers – Speed eTicket</option>
                   <option>Term Life Express Point of Sale Decision</option>
-                  <option>Living Promise Level</option>
-                  <option>Living Promise Graded</option>
+                  <option>Whole Life Express Application</option>
+                  <option>Living Promise Level Express</option>
+                  <option>Living Promise Graded Express</option>
+                  <option>Indexed Universal Life Express Application</option>
+                  <option>IUL Express with Easy Solve</option>
                 </select>
               </div>
               <div class="field"><label>Max Coverage Allowed (based on existing)</label><input id="max-coverage" value="$230,000" readonly /></div>
@@ -403,14 +405,148 @@
 
           <!-- 10 Underwriting -->
           <section class="step-view" data-step="underwriting" hidden>
-            <h2>Underwriting</h2>
-            <div class="alert success" id="uw-success" hidden>Thank you for completing the Health Assessment. Your responses have been submitted.</div>
-            <div class="grid">
-              <div class="field span-3"><label>Health Assessment</label>
-                <button type="button" class="btn" id="btn-health-assessment">Launch Assessment</button>
-                <span id="health-status" class="muted"></span>
+            <h2>Medical Questionnaire</h2>
+            <div class="alert info" id="medical-intro">
+              Please answer all questions honestly and completely. This information is used for underwriting purposes only.
+            </div>
+            
+            <!-- Universal Medical Questions (All Product Types) -->
+            <div class="field-group">
+              <h3>General Health Information</h3>
+              <div class="grid">
+                <div class="field span-2"><label>Height</label><input id="med-height" placeholder="5'10&quot;" /></div>
+                <div class="field span-2"><label>Weight</label><input id="med-weight" placeholder="170 lbs" /></div>
+                <div class="field span-2"><label>Do you use tobacco products?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="tobacco-use" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="tobacco-use" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>If yes, specify type and frequency</label><input id="tobacco-details" placeholder="e.g., Cigarettes - 1 pack daily" /></div>
               </div>
             </div>
+
+            <!-- Basic Medical History -->
+            <div class="field-group">
+              <h3>Medical History</h3>
+              <div class="grid">
+                <div class="field span-3"><label>Have you been hospitalized in the past 5 years?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="hospitalized" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="hospitalized" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>If yes, please provide details</label><textarea id="hospitalized-details" placeholder="Date, reason, outcome"></textarea></div>
+                
+                <div class="field span-3"><label>Are you currently taking any medications?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="medications" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="medications" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>If yes, list all medications and dosages</label><textarea id="medications-details" placeholder="Medication name, dosage, reason"></textarea></div>
+              </div>
+            </div>
+
+            <!-- Term Life Specific Questions -->
+            <div class="field-group" id="term-questions" style="display: none;">
+              <h3>Term Life Express Questions</h3>
+              <div class="grid">
+                <div class="field span-3"><label>Have you participated in any hazardous activities (aviation, rock climbing, racing) in the past 2 years?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="hazardous-activities" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="hazardous-activities" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>Have you been declined for life insurance in the past 3 years?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="declined-insurance" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="declined-insurance" value="No" checked /> No</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Whole Life Specific Questions -->
+            <div class="field-group" id="whole-life-questions" style="display: none;">
+              <h3>Whole Life Express Questions</h3>
+              <div class="grid">
+                <div class="field span-3"><label>Do you have any existing life insurance policies?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="existing-life-insurance" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="existing-life-insurance" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>If yes, total face amount and purpose</label><input id="existing-insurance-details" placeholder="Amount and reason for additional coverage" /></div>
+                <div class="field span-3"><label>Have you had any heart-related conditions (chest pain, high blood pressure, etc.)?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="heart-conditions" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="heart-conditions" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>Family history of heart disease or cancer before age 60?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="family-history" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="family-history" value="No" checked /> No</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- IUL Specific Questions -->
+            <div class="field-group" id="iul-questions" style="display: none;">
+              <h3>Indexed Universal Life Express Questions</h3>
+              <div class="grid">
+                <div class="field span-3"><label>What is your annual income?</label>
+                  <select id="annual-income">
+                    <option>Please select...</option>
+                    <option>Under $50,000</option>
+                    <option>$50,000 - $100,000</option>
+                    <option>$100,000 - $200,000</option>
+                    <option>$200,000 - $500,000</option>
+                    <option>Over $500,000</option>
+                  </select>
+                </div>
+                <div class="field span-3"><label>What is your net worth?</label>
+                  <select id="net-worth">
+                    <option>Please select...</option>
+                    <option>Under $100,000</option>
+                    <option>$100,000 - $500,000</option>
+                    <option>$500,000 - $1,000,000</option>
+                    <option>$1,000,000 - $5,000,000</option>
+                    <option>Over $5,000,000</option>
+                  </select>
+                </div>
+                <div class="field span-3"><label>Have you had any cancer diagnosis or treatment?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="cancer-history" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="cancer-history" value="No" checked /> No</label>
+                  </div>
+                </div>
+                <div class="field span-3"><label>Do you currently participate in any investment or retirement plans?</label>
+                  <div class="radios">
+                    <label><input type="radio" name="investment-plans" value="Yes" /> Yes</label>
+                    <label><input type="radio" name="investment-plans" value="No" checked /> No</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medical Exam Requirements -->
+            <div class="field-group">
+              <h3>Medical Exam</h3>
+              <div class="alert info">
+                Based on your coverage amount and age, a medical exam may be required. We will contact you to schedule this at no cost to you.
+              </div>
+              <div class="grid">
+                <div class="field span-3">
+                  <button type="button" class="btn" id="btn-complete-medical">Complete Medical Questionnaire</button>
+                  <span id="medical-status" class="muted"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert success" id="uw-success" hidden>Thank you for completing the Medical Questionnaire. Your responses have been submitted for underwriting review.</div>
           </section>
 
           <!-- 11 Beneficiaries -->
@@ -591,7 +727,7 @@
     </div>
   </div>
 
-  <footer class="footer">© <span id="year"></span> DAWGCHECK Training Simulator</footer>
+  <footer class="footer">© <span id="year"></span> Mutual of Omaha Insurance Company</footer>
 
   <script src="app.js?v=2025.08.25.1"></script>
   <script>
