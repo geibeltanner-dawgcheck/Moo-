@@ -249,7 +249,7 @@ $('#btn-hipaa-send')?.addEventListener('click', ()=>{
 /* ---------- Policies Tables ---------- */
 function policyRow(id, carrier=false){
   return `<tr data-id="${id}">
-    <td><input ${carrier?'value="DAWGCHECK Life"':''} /></td>
+    <td><input ${carrier?'value="Mutual of Omaha"':''} /></td>
     <td><input /></td>
     <td><input class="mask-money" placeholder="$20,000" /></td>
     <td>${carrier?'<select><option>Yes</option><option>No</option></select>':'<select><option>Life</option><option>Annuity</option></select>'}</td>
